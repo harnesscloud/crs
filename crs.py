@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from flask import Flask, request
-from scheduler import scheduler
+from crs_engine import scheduler
 import json, sys
 # from httplib import NotConnected
 
