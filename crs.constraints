@@ -1,18 +1,22 @@
 {
    "Hosts": {
-      "192.168.1.2": "maia01",
-      "192.168.1.3": "axel07"
+      "maia01": "127.0.0.1",
+      "axel07": "192.168.56.107",
+      "axel08": "192.168.56.108",
+      "axel09": "192.168.56.109"
    },   
-   "Zones": {
-      "Commodity": {
-         "Hosts": ["axel07", "maia01"],
-         "Resources": ["Machine"]
-      },
+   "Zones": [
+      {
+         "Name": "Commodity",
+         "Hosts": ["axel09", "axel07", "axel08", "maia01"],
+         "Types": ["Machine"]
       
-      "Specialised": {
+      },
+      {
+         "Name": "Specialised",
          "Hosts": ["maia01"],
-         "Resources": ["Machine", "DFECluster", "Storage"]
+         "Types": ["Machine", "DFECluster", "Storage"]
       }
-   }
+   ]
 }
 

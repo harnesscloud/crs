@@ -9,33 +9,100 @@ expect("getResourceTypes",
 
 
 ####################################################### prepareReservation
-p1=expect("prepRes1", 
+#p1=expect("prepRes1", 
+#        lambda x: len(x["result"]["Resources"]) == 5, API, "prepareReservation",
+#       {
+#          "Resources":[
+#          {
+#  	          "GroupID": "G0",          
+#             "Type":"Machine",
+#             "NumInstances": 4,
+#             "Attributes":
+#                 { "Cores": 4,
+#                   "Memory": 200,
+#                   "Disk": 8
+#                 }
+#          },
+#				  {
+#				      "GroupID": "G1",
+#						"Type":"DFECluster",
+#						"Attributes":{
+#						   "Quantity":2
+#						}
+#				  }          
+#          
+#          
+#          ]
+#	    }  
+#) 
+
+p2=expect("prepRes2", 
+        lambda x: len(x["result"]["Resources"]) == 1, API, "prepareReservation",
+       {
+          "Resources":[
+          {
+  	          "GroupID": "G0",          
+             "Type":"Machine",
+             "NumInstances": 1,
+             "Attributes":
+                 { "Cores": 16,
+                   "Memory": 200,
+                   "Disk": 8
+                 }
+          }
+          ]
+	    }  
+) 
+
+r2 = expect("createReservation2", 
+        lambda x: "ResID" in x["result"], API, "createReservation",
+       {
+			"ConfigID": p2["result"]["ConfigID"]
+	    }  
+)
+
+
+
+p3=expect("prepRes3", 
         lambda x: len(x["result"]["Resources"]) == 4, API, "prepareReservation",
        {
           "Resources":[
           {
   	          "GroupID": "G0",          
              "Type":"Machine",
-             "NumInstances": 3,
+             "NumInstances": 4,
              "Attributes":
-                 { "Cores": 2,
+                 { "Cores": 4,
                    "Memory": 200,
-                   "Disk": 10
+                   "Disk": 8
                  }
-          },
-				  {
-				      "GroupID": "G1",
-						"Type":"DFECluster",
-						"Attributes":{
-						   "Quantity":2
-						}
-				  }          
-          
-          
+          }
           ]
 	    }  
 ) 
 
+r3 = expect("createReservation3", 
+        lambda x: "ResID" in x["result"], API, "createReservation",
+       {
+			"ConfigID": p3["result"]["ConfigID"]
+	    }  
+)
+
+expect("releaseReservation2", 
+        lambda x: x["result"]=={}, API, "releaseReservation",
+       {
+			"ResID": r2["result"]["ResID"]
+	    }  
+)
+
+expect("releaseReservation3", 
+        lambda x: x["result"]=={}, API, "releaseReservation",
+       {
+			"ResID": r3["result"]["ResID"]
+	    }  
+)
+
+exit(0)
 r1 = expect("createReservation1", 
         lambda x: "ResID" in x["result"], API, "createReservation",
        {

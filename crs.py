@@ -2,6 +2,7 @@
 from flask import Flask, request
 from crs_engine import scheduler
 import json, sys
+
 # from httplib import NotConnected
 
 webserver = Flask(__name__)
@@ -20,37 +21,37 @@ def beforeRequest():
 
 @webserver.route("/method/addManager", methods=["POST"])
 def addManager():
-    print "\n================="
-    print "URL: addManager"
-    print "BODY:", request.data
+#    print "\n================="
+#    print "URL: addManager"
+#    print "BODY:", request.data
     result = json.dumps({"result":scheduler.addManager(json.loads(request.data))})
-    print "\n================="
-    print "URL: addManager"
-    print "RESULT:"
+#    print "\n================="
+#    print "URL: addManager"
+#    print "RESULT:"
     return result
     
 @webserver.route("/method/getResourceTypes", methods=["POST"])
 def getResourceTypes():
-    print "\n================="
-    print "URL: getResourceTypes"
-    print "BODY:", request.data
+#    print "\n================="
+#    print "URL: getResourceTypes"
+#    print "BODY:", request.data
     # "result:" is already included in the reply of IRM
     result = json.dumps({"result":scheduler.getResourceTypes()})
-    print "\n================="
-    print "URL: getResourceTypes"
-    print "RESULT:", result
+#    print "\n================="
+#    print "URL: getResourceTypes"
+#    print "RESULT:", result
     return result
     
 @webserver.route("/method/prepareReservation", methods=["POST"])
 def prepareReservation():
     try:
-		 print "\n================="
-		 print "URL: prepareReservation"
-		 print "BODY:", request.data
+#		 print "\n================="
+		 #print "URL: prepareReservation"
+#		 print "BODY:", request.data
 		 result = json.dumps({"result":scheduler.prepareReservation(json.loads(request.data))})
-		 print "\n================="
-		 print "URL: prepareReservation"
-		 print "RESULT:", result
+#		 print "\n================="
+		 #print "URL: prepareReservation"
+#		 print "RESULT:", result
 		 return result
     except Exception, msg:
 		return { "error: ", str(msg) }	 
@@ -68,31 +69,31 @@ def discardConfiguration():
         
 @webserver.route("/method/createReservation", methods=["POST"])
 def createReservation():
-    print "\n================="
-    print "URL: createReservation"
-    print "BODY:", request.data
+#    print "\n================="
+#    print "URL: createReservation"
+#    print "BODY:", request.data
     result = json.dumps({"result":scheduler.createReservation(json.loads(request.data))})
-    print "RESULT:", result
+#    print "RESULT:", result
     return result
 
 @webserver.route("/method/checkReservation", methods=["POST"])
 def checkReservation():
-    print "\n================="
-    print "URL: checkReservation"
-    print "BODY:", request.data
+#    print "\n================="
+#    print "URL: checkReservation"
+#    print "BODY:", request.data
     result = json.dumps({"result":scheduler.checkReservation(json.loads(request.data))})
-    print "RESULT:", result
+#    print "RESULT:", result
     return result
 
 @webserver.route("/method/releaseReservation", methods=["POST"])
 def releaseReservation():
-    print "\n================="
-    print "URL: releaseReservation"
-    print "BODY:", request.data
+#    print "\n================="
+#    print "URL: releaseReservation"
+#    print "BODY:", request.data
     result = json.dumps({"result":scheduler.releaseReservation(json.loads(request.data))})
-    print "\n================="
-    print "URL: releaseReservation"
-    print "RESULT:", result
+#    print "\n================="
+#    print "URL: releaseReservation"
+#    print "RESULT:", result
     return result
     
 @webserver.route("/method/releaseAllReservations", methods=["POST"])
@@ -106,11 +107,20 @@ def releaseAllReservations():
     print "RESULT:", result
     return result
     
-
+@webserver.route("/method/refresh", methods=["POST"])
+def refresh():
+    result = json.dumps({"result":scheduler.refresh(json.loads(request.data))})
+    return result
+                  
 if __name__ == "__main__":
+    global CRS_HOST, CRS_PORT
     if len(sys.argv) == 3:
         run_webserver(sys.argv[1], sys.argv[2])
+        CRS_HOST=sys.argv[1]
+        CRS_PORT=sys.argv[2]
     else:
-        run_webserver("localhost", "5558")
-        #run_webserver("131.254.201.5", "5558")
-        #run_webserver("172.16.0.1", "5558")
+        CRS_HOST='localhost'
+        CRS_PORT='5558'
+    
+    run_webserver(CRS_HOST, CRS_PORT)
+

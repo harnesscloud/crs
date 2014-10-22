@@ -53,13 +53,13 @@ class BaseClass:
         else:
             return self.Type
         
+
     def getJson_calculateResource(self):
-        # d = { "Type" : self.__dict__["Type"], "GroupID" : self.__dict__["GroupID"],"Attributes" : self.__dict__["Attributes"] }
-        # if 'Image' in self.__dict__:
-        #     d["Image"] = self.__dict__["Image"]
-        # return d
-        # return { "Type" : self.__dict__["Type"], "GroupID" : self.__dict__["GroupID"],"Attributes" : self.__dict__["Attributes"] }
-        return { "Type" : self.__dict__["Type"], "Attributes" : self.__dict__["Attributes"] }
+        d = { "Type" : self.__dict__["Type"], "Attributes" : self.__dict__["Attributes"] }
+
+        #if "GroupID" in self.__dict__:
+        #    d["GroupID"] = self.__dict__["GroupID"]
+        return d
     
     def getJson_reserveResources(self):
         return { "ID" : self.__dict__["ID"], "IP" : self.__dict__["IP"], "Type" : self.__dict__["Type"], "Attributes" : self.__dict__["Attributes"] }
@@ -219,11 +219,11 @@ class IRM:
             set_racks.add(rack)
             rack.addResource(d, self)
             
-        print datacenters
-        for rack in set_racks:
-            rack.calculateResourceAgg()
-        for datacenter in set_datacenters:
-            datacenter.calculateResourceAgg()
+        #print datacenters
+        #for rack in set_racks:
+        #    rack.calculateResourceAgg()
+        #for datacenter in set_datacenters:
+        #    datacenter.calculateResourceAgg()
         #print "\ngetAvailableResources done\n"
         return datacenters
         
@@ -287,8 +287,9 @@ class Reservation:
 		print "Prepare response to prepare configuration...."
 		for groupid in self.requests:
 			for i in range(self.requests[groupid].NumInstances):
-				resources.append(self.requests[groupid].getJson_calculateResource())
-				
+			   x = self.requests[groupid].getJson_calculateResource()
+			   x["GroupID"] = groupid
+			   resources.append(x)				
 		result["Resources"] = resources
 		return result
 
@@ -319,7 +320,7 @@ class Scheduler:
           try:
              self.constraints = json.load(f)
           except AttributeError:
-             self.constraints = { "Hosts": { }, "Zones" : { } }
+             self.constraints = {  }
              pass
 
     def __del__(self):
@@ -368,104 +369,132 @@ class Scheduler:
 					break 
 		return q
 		
+    def apply_constraints(self, available_ips, requests):       
+       if self.constraints == {}:
+          return available_ips
+       
+       # get all types in a request
+       types_req = set()
+       for r in requests:
+          types_req.add(requests[r].Type)
+       
+       selected_zone = None
+       for zone in self.constraints["Zones"]:
+          ztypes = set(zone["Types"])
+          if (types_req <= ztypes):
+             selected_zone = zone
+             break
+       
+       if selected_zone == None:
+          raise Exception("cannot find a zone: cannot reserve resources!")
+ 
+       
+       ips = filter(lambda x: x != None, map(lambda x: self.constraints["Hosts"].get(x), zone["Hosts"]))
+       print "requested types = ", types_req       
+       print "selected zone = ", selected_zone["Name"]
+       print "selected resources = ", ips
+       
+       return ips
     
     def prepareReservation(self, data):
-    
-		reservation = Reservation(data)
-		
+
+		self.refresh({})
+		reservation = Reservation(data)		
 		self.reservations[reservation.id_] = reservation
-		
-		self.print_all_available_resources()
-		print self.datacenters
-		
+			
 		candidates = []
+		
 		for dc in self.datacenters.values():
 			#print "Racks: ", dc.racks.values()
 			for rack in dc.racks.values():
-				print "Total res available :",rack.resourcesTotal
-				print "Res req :", reservation.requests.values()
-				print "Agg request :", reservation.aggregatedResources
-				
-				print "rack.resourcesTotal = ", rack.resourcesTotal
+				#print "Total res available :",rack.resourcesTotal
+				#print "Res req :", reservation.requests.values()
+				#print "Agg request :", reservation.aggregatedResources
+				#print "rack.resourcesTotal = ", rack.resourcesTotal
             
             # self.satisfies is not checking for types of attributes, disabling
 				if True: #self.satisfies(rack.resourcesTotal, reservation.aggregatedResources): 
-					candidates.append(rack)
-
+					candidates.extend(rack.resources.values())
+					
 		reserved_res = {}
 		# for each rack that has enough resources
-		print "candidates=", candidates
-		for candidate in candidates:
-			ips = map(lambda x: x.IP, candidate.resources.values())
-								
-         ###################### output: seems like we only reserve resources from the same rack
-			reserved_res = {}
-			cost = 0.0
-			
-			try:
-			   # for each group of requests
-				for key in reservation.requests:
-					k = 0 				
-					i = 0 # instance id
-      			
-					reserved_res[key] = []				
-					# traverse 
-					while(i < reservation.requests[key].NumInstances and k < len(ips)):
-                  ## list of resources that have IP=ips[k] *and* requested type
-						resource = filter(lambda r:r.IP == ips[k] and r.Type == reservation.requests[key].Type, 
-						           candidate.resources.values())
-						           
-						# assumes one IP per type e.g. resource[0]
-						if resource == []:
-							k = k + 1
-							continue
-						else:
-							resource = resource[0]
-						to_substract = []
-						
-						# set attributes added from previous schedule for this resource (resource.ID)
-						expanded_allocations = []						
-						for allocs in reserved_res.values():
-							expanded_allocations.extend(allocs)						
-						for j in range(len(expanded_allocations)):
-							if expanded_allocations[j]["Allocation"]["ID"] == resource.ID:
-								to_substract.append({"Attributes" : reservation.requests[key].Attributes})		
-						print "====> previous to_subtract: ", to_substract								
-						to_substract.append({"Attributes" : reservation.requests[key].Attributes})
-						print "to_subtract", str(to_substract)					
-						
-						irm_req = {"Resource" : resource.getJson_calculateResource(), "Reserve" : to_substract, "Release" : []}
-									
-						#request calculate capacity to irm
-						result = resource.irm.conn.requestPost("/calculateResourceCapacity", irm_req)
-						
-						print "===> request: ", irm_req
-						print "===> result: ", result
-						result = json.loads(result)["result"]
 
-						if result == {}:
-							k = k + 1
-							continue
-						else:
-							reserved_res[key].append({"Allocation" : {"ID" : resource.ID, "IP" : resource.IP, 
-							"Type" : resource.Type, "Attributes" : reservation.requests[key].Attributes}, "IRM" : resource.irm})							
-							for component in resource.Cost:
-								#print "Computing cost resource : ", resource.Cost
-								if component in reservation.requests[key].Attributes:
-									cost = cost + resource.Cost[component] * reservation.requests[key].Attributes[component]
-						i = i+1
-					if i != reservation.requests[key].NumInstances: 
-						raise Exception("Cannot satisfy this request!")
-					   						
-			except Exception, msg:
-				print "ERROR: ", str(msg)
-				reserved_res = {}
-				pass
+		available_ips = map(lambda x: x.IP, candidates)
+		print "Resources available = ", available_ips
+		
+		try:
+			ips = self.apply_constraints(available_ips, reservation.requests)
+			
+			if ips == []:
+			   raise Exception("cannot find resources to satisfy this requests!")
+			
+		
+			reserved_res = {}
+			cost = 0.0		
+	
+		   # for each group of requests
+			for key in reservation.requests:
+				k = 0 				
+				i = 0 # instance id
+   			
+				reserved_res[key] = []				
+				# traverse 
+				print "num instances = ", reservation.requests[key].NumInstances
+				while(i < reservation.requests[key].NumInstances and k < len(ips)):
+					print "iteration: ", i, ":", k
+               ## list of resources that have IP=ips[k] *and* requested type
+					resource = filter(lambda r:r.IP == ips[k] and r.Type == reservation.requests[key].Type, 
+					           candidates)
+					# assumes one IP per type e.g. resource[0]
+					if resource == []:
+						k = k + 1
+						continue
+					else:
+						resource = resource[0]
+						
+					
+					to_substract = []
+					
+					# set attributes added from previous schedule for this resource (resource.ID)
+					expanded_allocations = []						
+					for allocs in reserved_res.values():
+						expanded_allocations.extend(allocs)						
+					for j in range(len(expanded_allocations)):
+						if expanded_allocations[j]["Allocation"]["ID"] == resource.ID:
+							to_substract.append({"Attributes" : reservation.requests[key].Attributes})		
+					to_substract.append({"Attributes" : reservation.requests[key].Attributes})
+					
+					irm_req = {"Resource" : resource.getJson_calculateResource(), "Reserve" : to_substract, "Release" : []}
+					#request calculate capacity to irm
+					result = resource.irm.conn.requestPost("/calculateResourceCapacity", irm_req)
+					
+					result = json.loads(result)["result"]
+
+					if result == {}:
+						k = k + 1
+						continue
+					else:
+						reserved_res[key].append({"Allocation" : {"ID" : resource.ID, "IP" : resource.IP, 
+						"Type" : resource.Type, "Attributes" : reservation.requests[key].Attributes}, "IRM" : resource.irm})							
+						for component in resource.Cost:
+							#print "Computing cost resource : ", resource.Cost
+							if component in reservation.requests[key].Attributes:
+								cost = cost + resource.Cost[component] * reservation.requests[key].Attributes[component]
+					i = i+1
+				if i != reservation.requests[key].NumInstances: 
+					raise Exception("Cannot satisfy this request!")
+				   						
+		except Exception, msg:
+			print "ERROR: ", str(msg)
+			reserved_res = {}
+			pass
 		if (reserved_res == {}) or ([] in reserved_res.values()):
 			#configuration not found
 			return {}
 		print "\n----------------------------------------------------"
-		print "Reservations :", reserved_res
+		res = map(lambda r: r["Allocation"], sum(reserved_res.values(),[]))
+		for r in res:
+		   print "=>", r["IP"], ":", r["Type"]
 		print "----------------------------------------------------\n"
 		try:
 			reservation.Allocations = reserved_res
@@ -499,7 +528,6 @@ class Scheduler:
 				if reserv["result"]["Reservations"] == []:
 					raise Exception()
 				data.append(reserv["result"]["Reservations"])
-				self.datacenters.update(allocs[i]["IRM"].getAvailableResources(self.datacenters))
 			
 			reservation.InfrastructureReservationIDs = data
 		except Exception,msg:
@@ -553,10 +581,6 @@ class Scheduler:
 				result = json.loads(result)
 				if ("error" in result) or (result["result"] != {}):
 				   raise Exception("could not remove all resources!")
-		   # get available resources
-			time.sleep(4)
-			for irm in IRMs:
-				self.datacenters.update(irm.getAvailableResources(self.datacenters))
 			return {}      
 			  
 		except Exception, msg:
@@ -568,7 +592,17 @@ class Scheduler:
              result = json.loads(irm.conn.requestPost("/releaseAllResources", {}))
           return { }       
        except Exception, msg:
-		   return {"error": str(msg)}			
+		   return {"error": str(msg)}		
+		   
+    def refresh(self, data):
+       try:
+          for irm in self.IRMs:
+             print "HELLO!"
+             self.datacenters.update(irm.getAvailableResources(self.datacenters))
+          return { }       
+       except Exception, msg:
+		   return {"error": str(msg)}		
+ 	
 
 scheduler = Scheduler() 
 

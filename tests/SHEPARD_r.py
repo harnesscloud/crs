@@ -3,12 +3,13 @@ from trest import expect
 
 API="http://localhost:7075"
 
+
 expect("releaseAllResources",
        lambda x: x["result"] == {}, API, "releaseAllResources")
 
-expect("getAvailableResources", 
+av=expect("getAvailableResources", 
         lambda x: x["result"]["Resources"][0]["Attributes"]["Quantity"] == "8", API, "getAvailableResources")
-        
+
 r1=expect("reserveDFE-1",
         lambda x: len(x["result"]["Reservations"]) == 1, API, "reserveResources",
        {
