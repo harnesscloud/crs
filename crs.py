@@ -94,6 +94,18 @@ def releaseReservation():
     print "URL: releaseReservation"
     print "RESULT:", result
     return result
+    
+@webserver.route("/method/releaseAllReservations", methods=["POST"])
+def releaseAllReservations():
+    print "\n================="
+    print "URL: releaseAllReservations"
+    print "BODY:", request.data
+    result = json.dumps({"result":scheduler.releaseAllReservations(json.loads(request.data))})
+    print "\n================="
+    print "URL: releaseAllReservations"
+    print "RESULT:", result
+    return result
+    
 
 if __name__ == "__main__":
     if len(sys.argv) == 3:

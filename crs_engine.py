@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import json, httplib, sys, uuid
-from threading import Thread
+from threading import Thread, Lock
 import operator
 
 class Connection(object):
@@ -240,8 +240,12 @@ class Reservation:
 		self.aggregatedResources = {}
 		self.distanceSpecified = False
 		for d in data["Resources"]:
+			if "GroupID" not in d:
+				d["GroupID"] = "G" + os.urandom(5)
+			if "NumInstances" not in d:
+				d["NumInstances"] = 1
 			self.requests[d["GroupID"]] = BaseClass(d)
-			self.requests[d["GroupID"]].distance = sys.maxint
+			self.requests[d["GroupID"]].distance = sys.maxint			
 			if not (d["Type"] in self.aggregatedResources):
 				self.aggregatedResources[d["Type"]] = self.aggregate_res_description({}, d["Attributes"], d["NumInstances"])
 			else:
@@ -311,7 +315,13 @@ class Scheduler:
         self.IRMs = []
         self.datacenters = {}
         self.reservations = {}
-    
+        with open('crs.constraints') as f:
+          try:
+             self.constraints = json.load(f)
+          except AttributeError:
+             self.constraints = { "Hosts": { }, "Zones" : { } }
+             pass
+
     def __del__(self):
         pass
 
@@ -324,9 +334,11 @@ class Scheduler:
             self.networkMonitor = NetworkMonitor(data, self.datacenters)
         print "addManager done" 
         return {}
+    
         
     def getDelayAvailableResources(self, index):
         import time
+        
         time.sleep(2)
         self.datacenters.update(self.IRMs[index].getAvailableResources(self.datacenters))
            
@@ -358,6 +370,7 @@ class Scheduler:
 		
     
     def prepareReservation(self, data):
+    
 		reservation = Reservation(data)
 		
 		self.reservations[reservation.id_] = reservation
@@ -384,9 +397,7 @@ class Scheduler:
 		print "candidates=", candidates
 		for candidate in candidates:
 			ips = map(lambda x: x.IP, candidate.resources.values())
-			
-			#ips = map(lambda x: x[0], sorted_by_distance)
-						
+								
          ###################### output: seems like we only reserve resources from the same rack
 			reserved_res = {}
 			cost = 0.0
@@ -436,14 +447,15 @@ class Scheduler:
 							k = k + 1
 							continue
 						else:
-							reserved_res[key].append({"Allocation" : {"ID" : resource.ID, "IP" : resource.IP, "Type" : resource.Type, "Attributes" : reservation.requests[key].Attributes}, "IRM" : resource.irm})							
+							reserved_res[key].append({"Allocation" : {"ID" : resource.ID, "IP" : resource.IP, 
+							"Type" : resource.Type, "Attributes" : reservation.requests[key].Attributes}, "IRM" : resource.irm})							
 							for component in resource.Cost:
 								#print "Computing cost resource : ", resource.Cost
 								if component in reservation.requests[key].Attributes:
 									cost = cost + resource.Cost[component] * reservation.requests[key].Attributes[component]
 						i = i+1
 					if i != reservation.requests[key].NumInstances: 
-						raise "Cannot satisfy this request!"
+						raise Exception("Cannot satisfy this request!")
 					   						
 			except Exception, msg:
 				print "ERROR: ", str(msg)
@@ -477,15 +489,17 @@ class Scheduler:
 			reservation = self.reservations[id_]		
 			data = []
 			allocs = []
+			
 			for alloc in reservation.Allocations.values():
 				allocs.extend(alloc)
+				
 			for i in range(len(allocs)):
-				reserv = alloc[i]["IRM"].conn.requestPost("/reserveResources", {"Resources":[alloc[i]["Allocation"]]})
+				reserv = allocs[i]["IRM"].conn.requestPost("/reserveResources", {"Resources":[allocs[i]["Allocation"]]})
 				reserv = json.loads(reserv)
 				if reserv["result"]["Reservations"] == []:
 					raise Exception()
 				data.append(reserv["result"]["Reservations"])
-				self.datacenters.update(alloc[i]["IRM"].getAvailableResources(self.datacenters))
+				self.datacenters.update(allocs[i]["IRM"].getAvailableResources(self.datacenters))
 			
 			reservation.InfrastructureReservationIDs = data
 		except Exception,msg:
@@ -504,7 +518,7 @@ class Scheduler:
 			isready = True
 			addresses = []
 			for i in range(len(allocs)):
-				result = alloc[i]["IRM"].conn.requestPost("/verifyResources", {"Reservations":reservation.InfrastructureReservationIDs[i]})
+				result = allocs[i]["IRM"].conn.requestPost("/verifyResources", {"Reservations":reservation.InfrastructureReservationIDs[i]})
 				result = json.loads(result)
 				result = result["result"]
 				isready = isready and result["Reservations"][0]["Ready"] and "Address" in result["Reservations"][0].keys()
@@ -523,9 +537,9 @@ class Scheduler:
       except Exception,msg:
 			print "Failed checking resource: ", msg
 			return {}
-      		
 		
     def releaseReservation(self, data):
+  		import time
   		reservation = self.reservations[int(data["ResID"])]
   		allocs = []
   		IRMs={}
@@ -534,19 +548,27 @@ class Scheduler:
 		try:
 
 			for i in range(len(allocs)):
-				IRMs[alloc[i]["IRM"]] = True
-				result = alloc[i]["IRM"].conn.requestPost("/releaseResources", {"Reservations":reservation.InfrastructureReservationIDs[i]})
+				IRMs[allocs[i]["IRM"]] = True
+				result = allocs[i]["IRM"].conn.requestPost("/releaseResources", {"Reservations":reservation.InfrastructureReservationIDs[i]})
 				result = json.loads(result)
 				if ("error" in result) or (result["result"] != {}):
 				   raise Exception("could not remove all resources!")
 		   # get available resources
+			time.sleep(4)
 			for irm in IRMs:
 				self.datacenters.update(irm.getAvailableResources(self.datacenters))
 			return {}      
 			  
 		except Exception, msg:
 			return {"error": str(msg)}
-              
+			
+    def releaseAllReservations(self, data):
+       try:
+          for irm in self.IRMs:
+             result = json.loads(irm.conn.requestPost("/releaseAllResources", {}))
+          return { }       
+       except Exception, msg:
+		   return {"error": str(msg)}			
 
 scheduler = Scheduler() 
 

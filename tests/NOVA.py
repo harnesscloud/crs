@@ -1,14 +1,187 @@
 #!/usr/bin/env python
 from trest import expect
-from trest import p
+import json
 
-API="http://192.168.1.6:8888"
- 
+def getifip(ifn):
+    import socket, fcntl, struct
+    sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(sck.fileno(), 0x8915, struct.pack('256s', ifn[:15]))[20:24])
+    
+API="http://" + getifip("eth0") + ":8888"
 
+print "Using API: " + API
+     
 r=expect("getAvailableResources", 
         lambda x: len(x["result"]["Resources"])>=1, API, "getAvailableResources")
 
-      
+#print "AVAILABLE RESOURCES: ", r
+
+expect("calculateResourceCapacity1",
+        lambda x: x["result"]["Resource"]["Attributes"]["Cores"]==7, API, "calculateResourceCapacity",
+       {
+          "Resource":
+          {
+             "Type":"Machine",
+             "Attributes":
+                 { "Cores": 10,
+                   "Memory": 200,
+                   "Disk": 10,
+                   "Frequency": 2500
+                 }
+                 
+          },
+          "Reserve":
+             [ 
+               {
+                  "Attributes":
+		              { "Cores": 3,
+		                "Memory": 200,
+		                "Disk": 10,
+                      "Frequency": 2500		                
+  		              }
+               }
+             ]          
+	    }  
+)	
+
+expect("calculateResourceCapacity2",
+        lambda x: x["result"]["Resource"]["Attributes"]["Cores"]==0, API, "calculateResourceCapacity",
+       {
+          "Resource":
+          {
+             "Type":"Machine",
+             "Attributes":
+                 { "Cores": 10,
+                   "Memory": 200,
+                   "Disk": 10,
+                   "Frequency": 2500
+                 }
+                 
+          },
+          "Reserve":
+             [ 
+               {
+                  "Attributes":
+		              { "Cores": 10,
+		                "Memory": 200,
+		                "Disk": 10,
+                      "Frequency": 2500		                
+  		              }
+               }
+             ]          
+	    }  
+)	
+expect("calculateResourceCapacity3",
+        lambda x: x["result"]=={}, API, "calculateResourceCapacity",
+       {
+          "Resource":
+          {
+             "Type":"Machine",
+             "Attributes":
+                 { "Cores": 10,
+                   "Memory": 200,
+                   "Disk": 10,
+                   "Frequency": 2500
+                 }
+                 
+          },
+          "Reserve":
+             [ 
+               {
+                  "Attributes":
+		              { "Cores": 11,
+		                "Memory": 200,
+		                "Disk": 10,
+                      "Frequency": 2500		                
+  		              }
+               }
+             ]          
+	    }  
+)	
+expect("calculateResourceCapacity3",
+        lambda x: x["result"]=={}, API, "calculateResourceCapacity",
+       {
+          "Resource":
+          {
+             "Type":"Machine",
+             "Attributes":
+                 { "Cores": 11,
+                   "Memory": 201,
+                   "Disk": 10,
+                   "Frequency": 2500
+                 }
+                 
+          },
+          "Reserve":
+             [ 
+               {
+                  "Attributes":
+		              { "Cores": 11,
+		                "Memory": 202,
+		                "Disk": 10,
+                      "Frequency": 2500		                
+  		              }
+               }
+             ]          
+	    }  
+)
+
+expect("calculateResourceCapacity4",
+        lambda x: x["result"]["Resource"]["Attributes"]["Cores"]==11, API, "calculateResourceCapacity",
+       {
+          "Resource":
+          {
+             "Type":"Machine",
+             "Attributes":
+                 { "Cores": 11,
+                   "Memory": 201,
+                   "Disk": 10,
+                   "Frequency": 2500
+                 }
+                 
+          },
+          "Reserve":
+             [ 
+               {
+                  "Attributes":
+		              { "Cores": 11,
+		                "Memory": 202,
+		                "Disk": 10,
+                      "Frequency": 2500		                
+  		              }
+               },
+               {
+                  "Attributes":
+		              { "Cores": 11,
+		                "Memory": 202,
+		                "Disk": 10,
+                      "Frequency": 2500		                
+  		              }
+  		         }
+             ],
+          "Release":
+             [ 
+               {
+                  "Attributes":
+		              { "Cores": 11,
+		                "Memory": 202,
+		                "Disk": 10,
+                      "Frequency": 2500		                
+  		              }
+               },
+               {
+                  "Attributes":
+		              { "Cores": 11,
+		                "Memory": 202,
+		                "Disk": 10,
+                      "Frequency": 2500		                
+  		              }
+  		          }
+             ]
+                       
+	    }  
+)
+
 r1=expect("reserveVM-1",
         lambda x: len(x["result"]["Reservations"]) == 1, API, "reserveResources",
        {
@@ -28,8 +201,8 @@ r1=expect("reserveVM-1",
 	    }  
 )	
 
-r1=expect("reserveVM-2",
-        lambda x: len(x["result"]["Reservations"]) == 1, API, "reserveResources",
+r2=expect("reserveVM-2",
+        lambda x: len(x["result"]["Reservations"]) == 3, API, "reserveResources",
        {
           "Resources":[
           {
@@ -37,16 +210,37 @@ r1=expect("reserveVM-2",
              "ID":r["result"]["Resources"][0]["ID"],
              "IP":r["result"]["Resources"][0]["IP"],
              "Attributes":
-                 { "Cores": 25,
+                 { "Cores": 2,
                    "Memory": 200,
-                   "Disk": 1000
+                   "Disk": 10
                  }
                  
-          }
+          },
+          {
+             "Type":"Machine",
+             "ID":r["result"]["Resources"][0]["ID"],
+             "IP":r["result"]["Resources"][0]["IP"],
+             "Attributes":
+                 { "Cores": 3,
+                   "Memory": 200,
+                   "Disk": 10
+                 }
+                 
+          },          
+          {
+             "Type":"Machine",
+             "ID":r["result"]["Resources"][1]["ID"],
+             "IP":r["result"]["Resources"][1]["IP"],
+             "Attributes":
+                 { "Cores": 4,
+                   "Memory": 200,
+                   "Disk": 10
+                 }
+                 
+          }          
           ]
-	    }  
+	    }  	     
 )	
-
 
 expect("verifyResources-1",
         lambda x: x["result"]["Reservations"][0]["Ready"], API, "verifyResources",
@@ -59,18 +253,27 @@ expect("verifyResources-1",
 expect("verifyResources-2",
         lambda x: x["result"]["Reservations"][0]["Ready"], API, "verifyResources",
        {
-         "Reservations": r1["result"]["Reservations"]
+         "Reservations": r2["result"]["Reservations"]
 	    }  
 )	
 
 
-print r1["result"]["Reservations"]
 expect("releaseVM-1",
         lambda x: x["result"] == {}, API, "releaseResources",
        {
           "Reservations": r1["result"]["Reservations"]
 	    }  
 )	
+
+
+expect("releaseVM-2",
+        lambda x: x["result"] == {}, API, "releaseResources",
+       {
+          "Reservations": r2["result"]["Reservations"]
+	    }  
+)	
+
+
 
 
 print "All tests passed!"
