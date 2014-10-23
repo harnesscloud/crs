@@ -2,7 +2,37 @@
 import json, httplib, sys, uuid
 from threading import Thread, Lock
 import operator
+import logging
+import logging.handlers as handlers
 
+#Config and format for logging messages
+logger = logging.getLogger("Rotating Log")
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter(fmt='%(asctime)s.%(msecs)d - %(levelname)s: %(filename)s - %(funcName)s: %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
+handler = handlers.TimedRotatingFileHandler("crs.log",when="H",interval=24,backupCount=0)
+## Logging format
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+def log(msg):
+   logger.info(msg)
+   print "[i] " + msg 
+
+def harness_request(topic, sender, receiver, msg):
+   sender = "S"
+   receiver = "T"
+   logger.info("SEQ:" + topic + "||" + sender + "->" + receiver + ": " + msg)
+   
+def harness_reply(topic, sender, receiver, msg):
+   sender = "S"
+   sender = "T"
+   logger.info("SEQ:" + topic + "||" + sender + "-->>" + receiver + ": " + msg)
+
+def harness_note(topic, component, msg):
+   sender = "S"
+   logger.info("SEQ:" + topic + "||" + "note over " + component + ": " + msg)
+
+   
 class Connection(object):
     """This is a wrapper for http connections"""
     
@@ -189,6 +219,11 @@ class DataCenter:
 class IRM:
     def __init__(self, data):
         self.ID = data["Hostname"] + str(data["Port"])
+        if "Name" in data:
+           self.Name = data["Name"]
+        else:
+           self.Name = "<unknown>"
+                
         self.conn = Connection(data)
         
     def getResourceTypes(self):
@@ -199,10 +234,13 @@ class IRM:
     
     def getAvailableResources(self, datacenters = {}):
         data = self.conn.requestPost("/getAvailableResources", {})
+        harness_request("Discovery", "CRS", self.Name, "Get available resources")
         data = json.loads(data)
         data = data["result"]
         set_racks = set()
         set_datacenters = set()
+        set_IPs = set()
+        set_Types = set()
         for d in data["Resources"]:
             _, datacenterID, rackID, _, _, _ = d["ID"].split('/')
             
@@ -218,6 +256,10 @@ class IRM:
             
             set_racks.add(rack)
             rack.addResource(d, self)
+            set_IPs.add(d["IP"])
+            set_Types.add(d["Type"])
+         
+        harness_reply("Discovery",  self.Name, "CRS", "(" + str(set_IPs) + ", " + str(set_Types))         
             
         #print datacenters
         #for rack in set_racks:
@@ -328,12 +370,16 @@ class Scheduler:
 
     def addManager(self, data):
         if data["Manager"] == "IRM":
-            self.IRMs.append(IRM(data))
-            print (str(self.IRMs))
+            irm = IRM(data)
+            self.IRMs.append(irm)
+            log("Adding IRM: " + irm.Name)
+
+            harness_reply("Discovery", irm.Name, "CRS", "Registering IRM")
+            
             Thread(target=self.getDelayAvailableResources, args=[len(self.IRMs) - 1]).start()
         elif data["Manager"] == "NetworkMonitor":
             self.networkMonitor = NetworkMonitor(data, self.datacenters)
-        print "addManager done" 
+
         return {}
     
         
@@ -430,8 +476,8 @@ class Scheduler:
 			
 		
 			reserved_res = {}
-			cost = 0.0		
-	
+			cost = 0.0	
+			
 		   # for each group of requests
 			for key in reservation.requests:
 				k = 0 				
@@ -445,14 +491,15 @@ class Scheduler:
                ## list of resources that have IP=ips[k] *and* requested type
 					resource = filter(lambda r:r.IP == ips[k] and r.Type == reservation.requests[key].Type, 
 					           candidates)
+					
+					         
 					# assumes one IP per type e.g. resource[0]
 					if resource == []:
 						k = k + 1
 						continue
 					else:
 						resource = resource[0]
-						
-					
+					print "result==>", resource  	
 					to_substract = []
 					
 					# set attributes added from previous schedule for this resource (resource.ID)
@@ -463,7 +510,7 @@ class Scheduler:
 						if expanded_allocations[j]["Allocation"]["ID"] == resource.ID:
 							to_substract.append({"Attributes" : reservation.requests[key].Attributes})		
 					to_substract.append({"Attributes" : reservation.requests[key].Attributes})
-					
+					print "to_substract = ", to_substract
 					irm_req = {"Resource" : resource.getJson_calculateResource(), "Reserve" : to_substract, "Release" : []}
 					#request calculate capacity to irm
 					result = resource.irm.conn.requestPost("/calculateResourceCapacity", irm_req)

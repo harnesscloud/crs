@@ -19,7 +19,8 @@ expect("getSimpleMachineReq1",
              "Attributes":
                  { "Cores": 2,
                    "Memory": 200,
-                   "Disk": 10
+                   "Disk": 10,
+                   "Frequency": 2400
                  }
                  
           }
@@ -28,14 +29,14 @@ expect("getSimpleMachineReq1",
 ) 
 
 expect("getSimpleMachineReq2", 
-        lambda x: x["result"]["Resources"][0]["Attributes"]["Cores"] == 16, API, "prepareReservation",
+        lambda x: x["result"]["Resources"][0]["Attributes"]["Cores"] == 10, API, "prepareReservation",
        {
           "Resources":[
           {
   	          "GroupID": "ID0",          
              "Type":"Machine",
              "Attributes":
-                 { "Cores": 16,
+                 { "Cores": 10,
                    "Memory": 200,
                    "Disk": 10
                  }
@@ -120,7 +121,7 @@ expect("getSimpleMachineReq4",
 						"Type":"Machine",
 						"NumInstances":2,
 						"Attributes":
-				        { "Cores": 4,
+				        { "Cores": 3,
 		                "Memory": 200,
 		                "Disk": 10
 		              }
@@ -158,7 +159,7 @@ expect("getSimpleMachineReq_bound0",
 						"Type":"Machine",
 						"NumInstances":4,
 						"Attributes":
-				        { "Cores": 4,
+				        { "Cores": 3,
 		                "Memory": 50,
 		                "Disk": 5
 		              }

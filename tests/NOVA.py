@@ -229,8 +229,8 @@ r2=expect("reserveVM-2",
           },          
           {
              "Type":"Machine",
-             "ID":r["result"]["Resources"][1]["ID"],
-             "IP":r["result"]["Resources"][1]["IP"],
+             "ID":r["result"]["Resources"][0]["ID"],
+             "IP":r["result"]["Resources"][0]["IP"],
              "Attributes":
                  { "Cores": 4,
                    "Memory": 200,

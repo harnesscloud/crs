@@ -2,40 +2,52 @@
 from trest import expect
 
 API="http://localhost:5558"
-      
+   
+expect("releaseAllReservations", 
+       lambda x: x["result"] == {}, 
+       API, "releaseAllReservations")
+             
 expect("getResourceTypes", 
        lambda x: ("result" in x) and ("Types" in x["result"]) and len(x["result"]["Types"]) == 2, 
        API, "getResourceTypes")
 
 
 ####################################################### prepareReservation
-#p1=expect("prepRes1", 
-#        lambda x: len(x["result"]["Resources"]) == 5, API, "prepareReservation",
-#       {
-#          "Resources":[
-#          {
-#  	          "GroupID": "G0",          
-#             "Type":"Machine",
-#             "NumInstances": 4,
-#             "Attributes":
-#                 { "Cores": 4,
-#                   "Memory": 200,
-#                   "Disk": 8
-#                 }
-#          },
-#				  {
-#				      "GroupID": "G1",
-#						"Type":"DFECluster",
-#						"Attributes":{
-#						   "Quantity":2
-#						}
-#				  }          
-#          
-#          
-#          ]
-#	    }  
-#) 
+p1=expect("prepRes1", 
+        lambda x: len(x["result"]["Resources"]) == 5, API, "prepareReservation",
+       {
+         "Resources":[
+          {
+  	          "GroupID": "G0",          
+             "Type":"Machine",
+             "NumInstances": 4,
+             "Attributes":
+                 { "Cores": 3,
+                   "Memory": 200,
+                   "Disk": 8
+                 }
+          },
+				  {
+				      "GroupID": "G1",
+						"Type":"DFECluster",
+						"Attributes":{
+						   "Quantity":2
+						}
+				  }          
+          
+          
+          ]
+	    }  
+) 
 
+r1 = expect("createReservation1", 
+        lambda x: "ResID" in x["result"], API, "createReservation",
+       {
+			"ConfigID": p1["result"]["ConfigID"]
+	    }  
+)
+
+exit(0)
 p2=expect("prepRes2", 
         lambda x: len(x["result"]["Resources"]) == 1, API, "prepareReservation",
        {
@@ -45,7 +57,7 @@ p2=expect("prepRes2",
              "Type":"Machine",
              "NumInstances": 1,
              "Attributes":
-                 { "Cores": 16,
+                 { "Cores": 12,
                    "Memory": 200,
                    "Disk": 8
                  }
@@ -72,7 +84,7 @@ p3=expect("prepRes3",
              "Type":"Machine",
              "NumInstances": 4,
              "Attributes":
-                 { "Cores": 4,
+                 { "Cores": 3,
                    "Memory": 200,
                    "Disk": 8
                  }

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from trest import expect
-from trest import p
 
 API="http://localhost:7075"
        

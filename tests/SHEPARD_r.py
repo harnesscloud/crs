@@ -8,7 +8,7 @@ expect("releaseAllResources",
        lambda x: x["result"] == {}, API, "releaseAllResources")
 
 av=expect("getAvailableResources", 
-        lambda x: x["result"]["Resources"][0]["Attributes"]["Quantity"] == "8", API, "getAvailableResources")
+        lambda x: x["result"]["Resources"][0]["Attributes"]["Quantity"] == 8, API, "getAvailableResources")
 
 r1=expect("reserveDFE-1",
         lambda x: len(x["result"]["Reservations"]) == 1, API, "reserveResources",
@@ -37,7 +37,7 @@ r2=expect("reserveDFE-5",
 		   ]
 	    }  
 )	            
-exit(0)
+
 expect("reserveDFE-3_to_fail",
         lambda x: ("error" in x) and (x["error"]["message"].find("Insufficient resources") != -1), API, "reserveResources",
        {

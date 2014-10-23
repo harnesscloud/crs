@@ -1,14 +1,12 @@
 {
    "Hosts": {
-      "maia01": "127.0.0.1",
-      "axel07": "192.168.56.107",
-      "axel08": "192.168.56.108",
-      "axel09": "192.168.56.109"
+      "maia01": "146.169.2.51",
+      "axel07": "146.169.2.15"
    },   
    "Zones": [
       {
          "Name": "Commodity",
-         "Hosts": ["axel09", "axel07", "axel08", "maia01"],
+         "Hosts": ["axel07", "maia01"],
          "Types": ["Machine"]
       
       },
