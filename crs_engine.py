@@ -149,8 +149,8 @@ class Rack:
         if resource.getType() not in self.datacenter.type_irm.keys():
             self.datacenter.type_irm[resource.getType()] = resource.irm 
         if irm.ID not in self.irm_resources.keys():
-            self.irm_resources[irm.ID] = []
-        self.irm_resources[irm.ID].append(resource)
+            self.irm_resources[irm.ID] = { }
+        self.irm_resources[irm.ID][data["ID"]] = resource
                  
     def calculateResourceAgg(self):
         resources = {}
@@ -219,6 +219,8 @@ class DataCenter:
 class IRM:
     def __init__(self, data):
         self.ID = data["Hostname"] + str(data["Port"])
+        self.Hostname = data["Hostname"]
+        self.Port = data["Port"]
         if "Name" in data:
            self.Name = data["Name"]
         else:
@@ -231,6 +233,17 @@ class IRM:
         data = json.loads(data)
         data = data["result"]["Types"]
         return data
+        
+    def listResources(self, datacenters):
+       resources = {}
+       for d in datacenters:
+          for r in datacenters[d].racks:
+             if self.ID in datacenters[d].racks[r].irm_resources:
+                res = datacenters[d].racks[r].irm_resources[self.ID]      
+                resources = dict(resources.items() + res.items()) 
+       return resources      
+       
+    
     
     def getAvailableResources(self, datacenters = {}):
         data = self.conn.requestPost("/getAvailableResources", {})
@@ -499,7 +512,7 @@ class Scheduler:
 						continue
 					else:
 						resource = resource[0]
-					print "result==>", resource  	
+
 					to_substract = []
 					
 					# set attributes added from previous schedule for this resource (resource.ID)

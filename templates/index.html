@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block avail_res %}
+<h2> Available Resources </h2>
+    {% for irm in IRMs %}
+       <h3>{{irm.Name}} (http://{{irm.Hostname}}:{{irm.Port}})</h3>
+       <h4>Resources</h4>
+       <ol>
+       {% for res  in irm.listResources(DCs) %}  
+          <li><b>{{irm.listResources(DCs)[res].ID|res_id}}</b>: {{irm.listResources(DCs)[res].Type}} ({{irm.listResources(DCs)[res].IP}}) - ({{irm.listResources(DCs)[res].Attributes|tojson}}              
+       {% endfor %}          
+       </ol>
+    {% else %}
+        <h3>&lt;No IRMs registered&gt;</h3>
+    {% endfor %}    
+{% endblock avail_res %}
+
+{% block reservations %}
+<h2> Reservations </h2>
+    {% for reserv in INDEX_RES %}
+       <h3>ID: {{reserv}}</h3>
+       <ol><li type="square">{{RES[reserv].Allocations}}</li></ol>
+    {% else %}
+        <h3>&lt;No reservations&gt;</h3>
+    {% endfor %}    
+ 
+{% endblock reservations %}

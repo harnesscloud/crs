@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-from flask import Flask, request
+from flask import Flask, request, render_template
+
 from crs_engine import scheduler
 import json, sys
 
@@ -7,17 +8,35 @@ import json, sys
 
 webserver = Flask(__name__)
 
+@webserver.template_filter('res_id')
+def res_id(id):
+    ids = id.split('/')    
+    return ids[len(ids)-1]
+    
 def run_webserver(hostname, port):
     # hostname = config.get("SchedulerManager", "HOSTNAME")
     # port = int(config.get("SchedulerManager", "PORT"))  
     webserver.run(host=hostname, port=int(port), debug=False)
 
-@webserver.before_request
-def beforeRequest():    
-    if "application/json" not in request.headers["Content-Type"]:
-        msg = "Unsupported media type(%s), use application/json" % request.headers["Content-Type"]
-        webserver.logger.error(msg)
-        return msg
+#@webserver.before_request
+#def beforeRequest():    
+#    if "application/json" not in request.headers["Content-Type"]:
+#        msg = "Unsupported media type(%s), use application/json" % request.headers["Content-Type"]
+#        webserver.logger.error(msg)
+#        return msg
+
+@webserver.route("/status/")
+def status():
+   try:
+      IRMs = scheduler.IRMs
+      DCs = scheduler.datacenters
+      Reservations = scheduler.reservations
+      index_res = filter(lambda i:"InfrastructureReservationIDs" in dir(Reservations[i]), sorted(Reservations.keys(), reverse=True))
+      
+      return render_template('index.html', IRMs=IRMs, DCs=DCs, RES=Reservations, INDEX_RES=index_res)
+   except Exception, msg:
+      print "[x] ", str(msg)
+       
 
 @webserver.route("/method/addManager", methods=["POST"])
 def addManager():
@@ -96,20 +115,20 @@ def releaseReservation():
 #    print "RESULT:", result
     return result
     
-@webserver.route("/method/releaseAllReservations", methods=["POST"])
+@webserver.route("/method/releaseAllReservations", methods=["POST", "GET"])
 def releaseAllReservations():
     print "\n================="
     print "URL: releaseAllReservations"
     print "BODY:", request.data
-    result = json.dumps({"result":scheduler.releaseAllReservations(json.loads(request.data))})
+    result = json.dumps({"result":scheduler.releaseAllReservations({})})
     print "\n================="
     print "URL: releaseAllReservations"
     print "RESULT:", result
     return result
     
-@webserver.route("/method/refresh", methods=["POST"])
+@webserver.route("/method/refresh", methods=["POST", "GET"])
 def refresh():
-    result = json.dumps({"result":scheduler.refresh(json.loads(request.data))})
+    result = json.dumps({"result":scheduler.refresh({})})
     return result
                   
 if __name__ == "__main__":

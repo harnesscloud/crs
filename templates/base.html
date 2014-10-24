@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CRS Frontend</title>
+
+<input type="hidden" id="refreshed" value="no">
+<script type="text/javascript">
+onload=function(){
+var e=document.getElementById("refreshed");
+if(e.value=="no")e.value="yes";
+else{e.value="no";location.reload();}
+
+setTimeout(function(){
+   window.location.reload(1);
+}, 5000);
+
+}
+</script>
+    
+</head>
+<body>
+    <img src="http://www.harness-project.eu/wp-content/uploads/2013/03/LOGO.png" alt="Logo" height="100" style="max-width: 120px;"\>
+    <h1>CRS Frontend</h1>
+    
+<button type="button" onclick="location.href='/method/refresh'">Get Resources</button>    
+<button type="button" onclick="location.href='/method/releaseAllReservations'">Release All</button>    
+    
+{% block avail_res %}
+    <p>Default content to be displayed</p>
+{% endblock avail_res %}
+
+{% block reservations %}
+    <p>Default content to be displayed</p>
+{% endblock reservations %}
+</body>
+</html>
