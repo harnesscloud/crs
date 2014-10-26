@@ -31,8 +31,8 @@ def status():
       IRMs = scheduler.IRMs
       DCs = scheduler.datacenters
       Reservations = scheduler.reservations
-      index_res = filter(lambda i:"InfrastructureReservationIDs" in dir(Reservations[i]), sorted(Reservations.keys(), reverse=True))
-      
+      #index_res = filter(lambda i:"InfrastructureReservationIDs" in dir(Reservations[i]), sorted(Reservations.keys(), reverse=True))
+      index_res = sorted(Reservations.keys(), reverse=True)
       return render_template('index.html', IRMs=IRMs, DCs=DCs, RES=Reservations, INDEX_RES=index_res)
    except Exception, msg:
       print "[x] ", str(msg)
@@ -64,13 +64,13 @@ def getResourceTypes():
 @webserver.route("/method/prepareReservation", methods=["POST"])
 def prepareReservation():
     try:
-#		 print "\n================="
-		 #print "URL: prepareReservation"
-#		 print "BODY:", request.data
+		 print "\n================="
+		 print "URL: prepareReservation"
+		 print "BODY:", request.data
 		 result = json.dumps({"result":scheduler.prepareReservation(json.loads(request.data))})
-#		 print "\n================="
-		 #print "URL: prepareReservation"
-#		 print "RESULT:", result
+		 print "\n================="
+		 print "URL: prepareReservation"
+		 print "RESULT:", result
 		 return result
     except Exception, msg:
 		return { "error: ", str(msg) }	 
@@ -88,31 +88,31 @@ def discardConfiguration():
         
 @webserver.route("/method/createReservation", methods=["POST"])
 def createReservation():
-#    print "\n================="
-#    print "URL: createReservation"
-#    print "BODY:", request.data
+    print "\n================="
+    print "URL: createReservation"
+    print "BODY:", request.data
     result = json.dumps({"result":scheduler.createReservation(json.loads(request.data))})
-#    print "RESULT:", result
+    print "RESULT:", result
     return result
 
 @webserver.route("/method/checkReservation", methods=["POST"])
 def checkReservation():
-#    print "\n================="
-#    print "URL: checkReservation"
-#    print "BODY:", request.data
+    print "\n================="
+    print "URL: checkReservation"
+    print "BODY:", request.data
     result = json.dumps({"result":scheduler.checkReservation(json.loads(request.data))})
-#    print "RESULT:", result
+    print "RESULT:", result
     return result
 
 @webserver.route("/method/releaseReservation", methods=["POST"])
 def releaseReservation():
-#    print "\n================="
-#    print "URL: releaseReservation"
-#    print "BODY:", request.data
+    print "\n================="
+    print "URL: releaseReservation"
+    print "BODY:", request.data
     result = json.dumps({"result":scheduler.releaseReservation(json.loads(request.data))})
-#    print "\n================="
-#    print "URL: releaseReservation"
-#    print "RESULT:", result
+    print "\n================="
+    print "URL: releaseReservation"
+    print "RESULT:", result
     return result
     
 @webserver.route("/method/releaseAllReservations", methods=["POST", "GET"])

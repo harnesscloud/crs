@@ -300,7 +300,10 @@ class Reservation:
 			if "NumInstances" not in d:
 				d["NumInstances"] = 1
 			self.requests[d["GroupID"]] = BaseClass(d)
-			self.requests[d["GroupID"]].distance = sys.maxint			
+			self.requests[d["GroupID"]].distance = sys.maxint	
+			self.requests[d["GroupID"]].Image = d["Image"]
+			self.requests[d["GroupID"]].UserData = d["UserData"]
+					
 			if not (d["Type"] in self.aggregatedResources):
 				self.aggregatedResources[d["Type"]] = self.aggregate_res_description({}, d["Attributes"], d["NumInstances"])
 			else:
@@ -535,7 +538,9 @@ class Scheduler:
 						continue
 					else:
 						reserved_res[key].append({"Allocation" : {"ID" : resource.ID, "IP" : resource.IP, 
-						"Type" : resource.Type, "Attributes" : reservation.requests[key].Attributes}, "IRM" : resource.irm})							
+						"Type" : resource.Type, "Image": reservation.requests[key].Image, 
+						"UserData": reservation.requests[key].UserData,
+						"Attributes" : reservation.requests[key].Attributes}, "IRM" : resource.irm})							
 						for component in resource.Cost:
 							#print "Computing cost resource : ", resource.Cost
 							if component in reservation.requests[key].Attributes:
@@ -595,33 +600,41 @@ class Scheduler:
 			#traceback.print_exc()
 			print "Failed reserving resource: ", msg
 			return {}
-		return {"ResID":id_} 
-
+		return {"ResID":id_}
+		 
     def checkReservation(self, data):
       try:
 			reservation = self.reservations[int(data["ResID"])]
 			allocs = []
+			groupIDs = []
+			gkeys = reservation.Allocations.keys()
+			
+			i = 0
 			for alloc in reservation.Allocations.values():
 				allocs.extend(alloc)
+				for j in range(len(alloc)):
+				   groupIDs.append(gkeys[i])
+				i = i + 1
+				
 			isready = True
-			addresses = []
+			instances = []
 			for i in range(len(allocs)):
 				result = allocs[i]["IRM"].conn.requestPost("/verifyResources", {"Reservations":reservation.InfrastructureReservationIDs[i]})
 				result = json.loads(result)
 				result = result["result"]
 				isready = isready and result["Reservations"][0]["Ready"] and "Address" in result["Reservations"][0].keys()
 				if isready:
-					addresses.append(result["Reservations"][0]["Address"])
+				   instance = {}
+				   instance["Address"] = result["Reservations"][0]["Address"] 
+				   instance["GroupID"] = groupIDs[i]
+				   # to remove, I think
+				   if "ID" in result["Reservations"][0]:
+				      instance["ID"] = result["Reservations"][0]["ID"]
+				   instances.append(instance)
 				else:
 					return {}
 			
-
-			#for d in data["AvailableResources"]:
-			#    _, datacenterID, rackID, _, _, _ = d["ID"].split('/')
-			#    self.datacenters[datacenterID].racks[rackID].resources[d["ID"]].Attributes = d["Attributes"]
-			#    self.datacenters[datacenterID].racks[rackID].resources[d["ID"]].Cost = d["Cost"]
-
-			return {"Ready": True, "Addresses": addresses }
+			return {"Ready": True, "Instances": instances }
       except Exception,msg:
 			print "Failed checking resource: ", msg
 			return {}
@@ -657,7 +670,6 @@ class Scheduler:
     def refresh(self, data):
        try:
           for irm in self.IRMs:
-             print "HELLO!"
              self.datacenters.update(irm.getAvailableResources(self.datacenters))
           return { }       
        except Exception, msg:
