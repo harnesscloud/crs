@@ -31,8 +31,8 @@ def status():
       IRMs = scheduler.IRMs
       DCs = scheduler.datacenters
       Reservations = scheduler.reservations
-      #index_res = filter(lambda i:"InfrastructureReservationIDs" in dir(Reservations[i]), sorted(Reservations.keys(), reverse=True))
-      index_res = sorted(Reservations.keys(), reverse=True)
+      index_res = filter(lambda i:"InfrastructureReservationIDs" in dir(Reservations[i]), sorted(Reservations.keys(), reverse=True))
+      #index_res = sorted(Reservations.keys(), reverse=True)
       return render_template('index.html', IRMs=IRMs, DCs=DCs, RES=Reservations, INDEX_RES=index_res)
    except Exception, msg:
       print "[x] ", str(msg)
