@@ -7,7 +7,7 @@ expect("getResourceTypes",
        lambda x: ("result" in x) and ("Types" in x["result"]) and (x["result"]["Types"][0]["Type"] == "Storage"), 
        API, "getResourceTypes")
 
-'''
+
 expect("calculateResourceCapacity_simple_reserve",
        lambda x: False, API, "calculateResourceCapacity",
        {
@@ -21,7 +21,7 @@ expect("calculateResourceCapacity_simple_reserve",
 						}
 				  },
   	      "Reserve":
-  	         [ { "Attributes": { "Capacity": 3, "Throughput":100,"AccessType":"SEQUENTIAL" } } ],
+  	         [ { "Attributes": { "Capacity": 3, "Throughput":0,"AccessType":"SEQUENTIAL" } } ],
   	      "Release": []
   	    }
 )	  
@@ -144,7 +144,7 @@ expect("calculateResourceCapacity_multiple_reserves_releases_with_5_left",
   	         ]  	         
   	    }
 )	
-'''
+
 expect("calculateResourceAgg_single",
        lambda x: x["result"]["Attributes"]["Capacity"]==10, API, "calculateResourceAgg",
        {

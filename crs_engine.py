@@ -300,9 +300,11 @@ class Reservation:
 			if "NumInstances" not in d:
 				d["NumInstances"] = 1
 			self.requests[d["GroupID"]] = BaseClass(d)
-			self.requests[d["GroupID"]].distance = sys.maxint	
-			self.requests[d["GroupID"]].Image = d["Image"]
-			self.requests[d["GroupID"]].UserData = d["UserData"]
+			self.requests[d["GroupID"]].distance = sys.maxint
+			if "Image" in d:	
+				self.requests[d["GroupID"]].Image = d["Image"]
+			if "UserData" in d:
+				self.requests[d["GroupID"]].UserData = d["UserData"]
 					
 			if not (d["Type"] in self.aggregatedResources):
 				self.aggregatedResources[d["Type"]] = self.aggregate_res_description({}, d["Attributes"], d["NumInstances"])
@@ -537,10 +539,15 @@ class Scheduler:
 						k = k + 1
 						continue
 					else:
-						reserved_res[key].append({"Allocation" : {"ID" : resource.ID, "IP" : resource.IP, 
-						"Type" : resource.Type, "Image": reservation.requests[key].Image, 
-						"UserData": reservation.requests[key].UserData,
-						"Attributes" : reservation.requests[key].Attributes}, "IRM" : resource.irm})							
+						alloc_obj = {"ID" : resource.ID, "IP" : resource.IP, \
+					               "Type" : resource.Type, \
+						            "Attributes" : reservation.requests[key].Attributes}
+						if "UserData" in dir(reservation.requests[key]):
+						   alloc_obj["UserData"] = reservation.requests[key].UserData
+						if "Image" in dir(reservation.requests[key]):
+						   alloc_obj["Image"] = reservation.requests[key].Image
+											   
+						reserved_res[key].append({"Allocation" : alloc_obj, "IRM" : resource.irm})							
 						for component in resource.Cost:
 							#print "Computing cost resource : ", resource.Cost
 							if component in reservation.requests[key].Attributes:

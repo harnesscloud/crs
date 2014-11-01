@@ -3,11 +3,9 @@ from trest import expect
 
 API="http://localhost:8080"
 
-'''      
 expect("releaseAllResources",
        lambda x: x["result"] == {}, API, "releaseAllResources", { })
  
-'''
 expect("getAvailableResources", 
         lambda x: len(x["result"]["Resources"]) == 2, API, "getAvailableResources")
 
@@ -27,14 +25,14 @@ r1=expect("reserveStorage-1",
 		   ]
 	    }  
 )	
-print "reservation...", r1["result"]
+
 expect("checkReserveStorage-1",
         lambda x: x["result"]["Reservations"][0]["Ready"], API, "verifyResources",
        {
 			"Reservations":r1["result"]["Reservations"]			
 	    }  
 )	
-'''        
+
 expect("releaseReserveStorage-1",
         lambda x: x["result"] == { }, API, "releaseResources",
        {
@@ -42,7 +40,7 @@ expect("releaseReserveStorage-1",
 	    }  
 )	 
 
-
+'''
 r2=expect("reserveDFE-5",
         lambda x: len(x["result"]["Reservations"]) == 1, API, "reserveResources",
        {
