@@ -7,7 +7,7 @@
       {
          "Name": "Commodity",
          "Hosts": ["axel07", "maia01"],
-         "Types": ["Machine"]
+         "Types": ["Machine", "Storage"]
       
       },
       {
