@@ -551,7 +551,7 @@ class Scheduler:
 						for component in resource.Cost:
 							#print "Computing cost resource : ", resource.Cost
 							if component in reservation.requests[key].Attributes:
-								cost = cost + resource.Cost[component] * reservation.requests[key].Attributes[component]
+								cost = cost + float(resource.Cost[component]) * float(reservation.requests[key].Attributes[component])
 					i = i+1
 				if i != reservation.requests[key].NumInstances: 
 					raise Exception("Cannot satisfy this request!")
