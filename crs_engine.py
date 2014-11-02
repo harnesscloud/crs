@@ -19,17 +19,17 @@ def log(msg):
    print "[i] " + msg 
 
 def harness_request(topic, sender, receiver, msg):
-   sender = "S"
-   receiver = "T"
+   sender=sender.replace('-','_') 
+   receiver=receiver.replace('-','_')
    logger.info("SEQ:" + topic + "||" + sender + "->" + receiver + ": " + msg)
    
 def harness_reply(topic, sender, receiver, msg):
-   sender = "S"
-   sender = "T"
+   sender=sender.replace('-','_')
+   receiver=receiver.replace('-','_')
    logger.info("SEQ:" + topic + "||" + sender + "-->>" + receiver + ": " + msg)
 
 def harness_note(topic, component, msg):
-   sender = "S"
+   component=component.replace('-','_')
    logger.info("SEQ:" + topic + "||" + "note over " + component + ": " + msg)
 
    
@@ -272,7 +272,7 @@ class IRM:
             set_IPs.add(d["IP"])
             set_Types.add(d["Type"])
          
-        harness_reply("Discovery",  self.Name, "CRS", "(" + str(set_IPs) + ", " + str(set_Types))         
+        harness_reply("Discovery",  self.Name, "CRS", str(set_Types).replace('set', '') + ":" + str(set_IPs).replace('set',''))         
             
         #print datacenters
         #for rack in set_racks:
@@ -376,6 +376,7 @@ class Scheduler:
         self.IRMs = []
         self.datacenters = {}
         self.reservations = {}
+        harness_note("Discovery", "CRS", "Ready!")
         with open('crs.constraints') as f:
           try:
              self.constraints = json.load(f)
@@ -392,7 +393,7 @@ class Scheduler:
             self.IRMs.append(irm)
             log("Adding IRM: " + irm.Name)
 
-            harness_reply("Discovery", irm.Name, "CRS", "Registering IRM")
+            harness_reply("Discovery", irm.Name, "CRS", "Register " + irm.Name.replace("-","_"))
             
             Thread(target=self.getDelayAvailableResources, args=[len(self.IRMs) - 1]).start()
         elif data["Manager"] == "NetworkMonitor":
@@ -533,12 +534,11 @@ class Scheduler:
 					#request calculate capacity to irm
 					try:
 						result = resource.irm.conn.requestPost("/calculateResourceCapacity", irm_req)
+                                                result = json.loads(result)["result"]
 					except Exception:
-						result = {"Resource" : resource.getJson_calculateResource()}
+						result = {"Resource" : resource.getJson_calculateResource()}                                                
 						pass
 					
-					result = json.loads(result)["result"]
-
 					if result == {}:
 						k = k + 1
 						continue
@@ -568,12 +568,18 @@ class Scheduler:
 			#configuration not found
 			return {}
 		print "\n----------------------------------------------------"
+                
 		res = map(lambda r: r["Allocation"], sum(reserved_res.values(),[]))
+                sres = ""
 		for r in res:
 		   print "=>", r["IP"], ":", r["Type"]
+                   if sres != "":
+                      sres = sres + ";"
+                   sres = sres + str(r["Type"]) + ":" + str(r["IP"])
 		print "----------------------------------------------------\n"
 		try:
 			reservation.Allocations = reserved_res
+                        harness_note("Reservation", "CRS", "Allocated [ID:" + str(reservation.id_) + "]: " + str(sres))
 			result = reservation.getResultPrepareReservation()
 			result["Cost"] = cost
 			print "Result prepare reservation :", result
@@ -600,10 +606,12 @@ class Scheduler:
 				
 			for i in range(len(allocs)):
 				reserv = allocs[i]["IRM"].conn.requestPost("/reserveResources", {"Resources":[allocs[i]["Allocation"]]})
+                                harness_request("Reservation", "CRS", allocs[i]["IRM"].Name, "[ID:" + str(id_) + "] " + str(allocs[i]["Allocation"]["Attributes"]))
 				reserv = json.loads(reserv)
 				if reserv["result"]["Reservations"] == []:
 					raise Exception()
 				data.append(reserv["result"]["Reservations"])
+                                harness_reply("Reservation", allocs[i]["IRM"].Name, "CRS", "[ID:" + str(id_) + "] reservation: OK!") 
 			
 			reservation.InfrastructureReservationIDs = data
 		except Exception,msg:
