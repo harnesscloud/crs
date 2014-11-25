@@ -532,13 +532,13 @@ class Scheduler:
 					print "to_substract = ", to_substract
 					irm_req = {"Resource" : resource.getJson_calculateResource(), "Reserve" : to_substract, "Release" : []}
 					#request calculate capacity to irm
-					try:
-						result = resource.irm.conn.requestPost("/calculateResourceCapacity", irm_req)
-                                                result = json.loads(result)["result"]
-					except Exception:
-						result = {"Resource" : resource.getJson_calculateResource()}                                                
-						pass
-					
+					#try:
+					result = resource.irm.conn.requestPost("/calculateResourceCapacity", irm_req)                
+					#except Exception:
+					#	result = {"Resource" : resource.getJson_calculateResource()}                                                
+					#	pass
+
+					result = json.loads(result)["result"]					
 					if result == {}:
 						k = k + 1
 						continue
