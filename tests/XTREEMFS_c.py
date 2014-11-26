@@ -8,8 +8,8 @@ expect("getResourceTypes",
        API, "getResourceTypes")
 
 
-expect("calculateResourceCapacity_simple_reserve",
-       lambda x: False, API, "calculateResourceCapacity",
+expect("calculateResourceCapacity_simple_reserve_capacity",
+       lambda x: x["result"]["Resource"]["Attributes"]["Capacity"] == 7, API, "calculateResourceCapacity",
        {
 			"Resource":
 				  {
@@ -26,57 +26,145 @@ expect("calculateResourceCapacity_simple_reserve",
   	    }
 )	  
 
-
-expect("calculateResourceCapacity_multiple_reserves",
-       lambda x: x["result"]["Attributes"]["Quantity"]==5, API, "calculateResourceCapacity",
+expect("calculateResourceCapacity_mixed_reserve_capacity",
+       lambda x: x["result"] == {}, API, "calculateResourceCapacity",
        {
 			"Resource":
 				  {
-						"Type":"DFECluster",
+						"Type":"Storage",
 						"Attributes":{
-						   "Quantity":10
+						   "Capacity":10,
+						   "Throughput":100,
+						   "AccessType":"RANDOM"
 						}
 				  },
   	      "Reserve":
-  	         [ { "Attributes": { "Quantity": 3 } },
-    	        { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 1 } }    	       
+  	         [ { "Attributes": { "Capacity": 3, "Throughput":0,"AccessType":"SEQUENTIAL" } } ],
+  	      "Release": []
+  	    }
+)	
+
+expect("calculateResourceCapacity_simple_reserve_throughput",
+       lambda x: x["result"]["Resource"]["Attributes"]["Throughput"] == 80, API, "calculateResourceCapacity",
+       {
+			"Resource":
+				  {
+						"Type":"Storage",
+						"Attributes":{
+						   "Capacity":10,
+						   "Throughput":100,
+						   "AccessType":"SEQUENTIAL"
+						}
+				  },
+  	      "Reserve":
+  	         [ { "Attributes": { "Capacity": 3, "Throughput":20,"AccessType":"SEQUENTIAL" } } ],
+  	      "Release": []
+  	    }
+)	  
+
+
+
+expect("calculateResourceCapacity_multiple_reserves_capacity",
+       lambda x: x["result"]["Resource"]["Attributes"]["Capacity"] == 5, API, "calculateResourceCapacity",
+       {
+			"Resource":
+				  {
+						"Type":"Storage",
+						"Attributes":{
+						   "Capacity":10,
+   					   "Throughput":100,
+						   "AccessType":"SEQUENTIAL"						   
+						}
+				  },
+  	      "Reserve":
+  	         [ { "Attributes": { "Capacity": 3,"AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Capacity": 1,"AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Capacity": 1,"AccessType":"SEQUENTIAL" } }    	       
   	         ]
   	    }
 )	
 
-expect("calculateResourceCapacity_multiple_reserves_to_zero",
-       lambda x: x["result"]["Attributes"]["Quantity"]==0, API, "calculateResourceCapacity",
+expect("calculateResourceCapacity_multiple_reserves_throughput",
+       lambda x: (x["result"]["Resource"]["Attributes"]["Throughput"] == 50) and (x["result"]["Resource"]["Attributes"]["Capacity"] == 10), API, "calculateResourceCapacity",
        {
 			"Resource":
 				  {
-						"Type":"DFECluster",
+						"Type":"Storage",
 						"Attributes":{
-						   "Quantity":10
+						   "Capacity":10,
+   					   "Throughput":100,
+						   "AccessType":"SEQUENTIAL"						   
 						}
 				  },
   	      "Reserve":
-  	         [ { "Attributes": { "Quantity": 3 } },
-    	        { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 6 } }    	       
+  	         [ { "Attributes": { "Throughput": 30,"AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Throughput": 10,"AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Throughput": 10,"AccessType":"SEQUENTIAL" } }    	       
+  	         ]
+  	    }
+)	
+
+## error: should return Capacity == 0 ##
+
+expect("calculateResourceCapacity_multiple_reserves_to_zero_capacity",
+       lambda x:  x["result"]["Resource"]["Attributes"]["Capacity"] == 0, API, "calculateResourceCapacity",
+       {
+			"Resource":
+				  {
+						"Type":"Storage",
+						"Attributes":{
+						   "Capacity":10,
+   					   "Throughput":100,
+						   "AccessType":"SEQUENTIAL"						   
+						}
+				  },
+  	      "Reserve":
+  	         [ { "Attributes": { "Capacity": 3, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Capacity": 1, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Capacity": 6, "AccessType":"SEQUENTIAL" } }    	       
+  	         ]
+  	    }
+)	
+
+
+## error: should return Throughput == 0 ##
+
+expect("calculateResourceCapacity_multiple_reserves_to_zero_throughput",
+       lambda x:  x["result"]["Resource"]["Attributes"]["Throughput"] == 0, API, "calculateResourceCapacity",
+       {
+			"Resource":
+				  {
+						"Type":"Storage",
+						"Attributes":{
+						   "Capacity":10,
+   					   "Throughput":100,
+						   "AccessType":"SEQUENTIAL"						   
+						}
+				  },
+  	      "Reserve":
+  	         [ { "Attributes": { "Throughput": 30, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Throughput": 10, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Throughput": 60, "AccessType":"SEQUENTIAL" } }    	       
   	         ]
   	    }
 )	
 
 expect("calculateResourceCapacity_multiple_releases",
-       lambda x: x["result"]["Attributes"]["Quantity"]==20, API, "calculateResourceCapacity",
+       lambda x: x["result"]["Resource"]["Attributes"]["Capacity"] == 20, API, "calculateResourceCapacity",
        {
 			"Resource":
 				  {
-						"Type":"DFECluster",
+						"Type":"Storage",
 						"Attributes":{
-						   "Quantity":10
+						   "Capacity":10,
+   					   "Throughput":100,
+						   "AccessType":"SEQUENTIAL"						   
 						}
 				  },
   	      "Release":
-  	         [ { "Attributes": { "Quantity": 3 } },
-    	        { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 6 } }    	       
+  	         [ { "Attributes": { "Capacity": 3, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Capacity": 1, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Capacity": 6, "AccessType":"SEQUENTIAL" } }    	       
   	         ]
   	    }
 )	
@@ -86,64 +174,123 @@ expect("calculateResourceCapacity_multiple_reserves_exceed_capacity",
        {
 			"Resource":
 				  {
-						"Type":"DFECluster",
+						"Type":"Storage",
 						"Attributes":{
-						   "Quantity":10
+						   "Capacity":10,
+   					   "Throughput":100,
+						   "AccessType":"SEQUENTIAL"						   
 						}
 				  },
   	      "Reserve":
-  	         [ { "Attributes": { "Quantity": 3 } },
-    	        { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 7 } }    	       
+  	         [ { "Attributes": { "Capacity": 3, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Capacity": 1, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Capacity": 7, "AccessType":"SEQUENTIAL" } }    	       
   	         ]
   	    }
 )	
 
+
 expect("calculateResourceCapacity_multiple_reserves_releases_border",
-       lambda x: x["result"]["Attributes"]["Quantity"]==0, API, "calculateResourceCapacity",
+       lambda x: x["result"]["Resource"]["Attributes"]["Capacity"] == 0, API, "calculateResourceCapacity",
        {
 			"Resource":
 				  {
-						"Type":"DFECluster",
+						"Type":"Storage",
 						"Attributes":{
-						   "Quantity":10
+						   "Capacity":10,
+   					   "Throughput":100,
+						   "AccessType":"RANDOM"						   
 						}
 				  },
   	      "Reserve":
-  	         [ { "Attributes": { "Quantity": 3 } },
-    	        { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 7 } }    	       
+  	         [ { "Attributes": { "Capacity": 3, "AccessType":"RANDOM" } },
+    	        { "Attributes": { "Capacity": 1, "AccessType":"RANDOM" } },
+    	        { "Attributes": { "Capacity": 7, "AccessType":"RANDOM" } }    	       
   	         ],
   	      "Release":
-  	         [ { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 0 } },
-    	        { "Attributes": { "Quantity": 0 } }    	       
+  	         [ { "Attributes": { "Capacity": 1, "AccessType":"RANDOM"  } },
+    	        { "Attributes": { "Capacity": 0, "AccessType":"RANDOM"  } },
+    	        { "Attributes": { "Capacity": 0, "AccessType":"RANDOM"  } }    	       
   	         ]  	         
   	    }
 )	
 
-expect("calculateResourceCapacity_multiple_reserves_releases_with_5_left",
-       lambda x: x["result"]["Attributes"]["Quantity"]==5, API, "calculateResourceCapacity",
+
+expect("calculateResourceCapacity_multiple_reserves_releases_border_mix",
+       lambda x: x["result"] == {}, API, "calculateResourceCapacity",
        {
 			"Resource":
 				  {
-						"Type":"DFECluster",
+						"Type":"Storage",
 						"Attributes":{
-						   "Quantity":10
+						   "Capacity":10,
+   					   "Throughput":100,
+						   "AccessType":"RANDOM"						   
 						}
 				  },
   	      "Reserve":
-  	         [ { "Attributes": { "Quantity": 3 } },
-    	        { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 7 } }    	       
+  	         [ { "Attributes": { "Capacity": 3, "AccessType":"RANDOM" } },
+    	        { "Attributes": { "Capacity": 1, "AccessType":"RANDOM" } },
+    	        { "Attributes": { "Capacity": 7, "AccessType":"RANDOM" } }    	       
   	         ],
   	      "Release":
-  	         [ { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 2 } },
-    	        { "Attributes": { "Quantity": 3 } }    	       
+  	         [ { "Attributes": { "Capacity": 1, "AccessType":"SEQUENTIAL"  } },
+    	        { "Attributes": { "Capacity": 0, "AccessType":"SEQUENTIAL"  } },
+    	        { "Attributes": { "Capacity": 0, "AccessType":"SEQUENTIAL"  } }    	       
   	         ]  	         
   	    }
 )	
+
+expect("calculateResourceCapacity_multiple_reserves_releases_with_5_left_capacity",
+       lambda x: x["result"]["Resource"]["Attributes"]["Capacity"]==5, API, "calculateResourceCapacity",
+       {
+			"Resource":
+				  {
+						"Type":"Storage",
+						"Attributes":{
+						   "Capacity":10,
+   					   "Throughput":100,
+						   "AccessType":"SEQUENTIAL"						   
+						}
+				  },
+  	      "Reserve":
+  	         [ { "Attributes": { "Capacity": 3, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Capacity": 1, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Capacity": 7, "AccessType":"SEQUENTIAL" } }    	       
+  	         ],
+  	      "Release":
+  	         [ { "Attributes": { "Capacity": 1, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Capacity": 2, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Capacity": 3, "AccessType":"SEQUENTIAL" } }    	       
+  	         ]  	         
+  	    }
+)	
+
+expect("calculateResourceCapacity_multiple_reserves_releases_with_5_left_throughput",
+       lambda x: x["result"]["Resource"]["Attributes"]["Throughput"]==50, API, "calculateResourceCapacity",
+       {
+			"Resource":
+				  {
+						"Type":"Storage",
+						"Attributes":{
+						   "Capacity":10,
+   					   "Throughput":100,
+						   "AccessType":"SEQUENTIAL"						   
+						}
+				  },
+  	      "Reserve":
+  	         [ { "Attributes": { "Throughput": 30, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Throughput": 10, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Throughput": 70, "AccessType":"SEQUENTIAL" } }    	       
+  	         ],
+  	      "Release":
+  	         [ { "Attributes": { "Throughput": 10, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Throughput": 20, "AccessType":"SEQUENTIAL" } },
+    	        { "Attributes": { "Throughput": 30, "AccessType":"SEQUENTIAL" } }    	       
+  	         ]  	         
+  	    }
+)	
+
 
 expect("calculateResourceAgg_single",
        lambda x: x["result"]["Attributes"]["Capacity"]==10, API, "calculateResourceAgg",

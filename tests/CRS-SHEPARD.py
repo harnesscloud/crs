@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 from trest import expect
-from trest import p
 
-API="http://localhost:5558"
+API="http://localhost:56789"
 
        
 expect("getResourceTypes", 
@@ -11,7 +10,7 @@ expect("getResourceTypes",
 
 ####################################################### prepareReservation
 p1 = expect("getSimpleDFEReq1", 
-        lambda x: x["result"]["Resources"][0]["Attributes"]["Quantity"] == 1, API, "prepareReservation",
+        lambda x: x["result"]["Resources"][0]["Attributes"]["Size"] == 1, API, "prepareReservation",
        {
 			"Resources":[
 				  {
@@ -19,7 +18,7 @@ p1 = expect("getSimpleDFEReq1",
 						"Type":"DFECluster",
 						"NumInstances":1,
 						"Attributes":{
-						   "Quantity":1
+						   "Size":1
 						}
 				  }
 		   ],
@@ -28,7 +27,7 @@ p1 = expect("getSimpleDFEReq1",
 ) 
 
 p2 = expect("getSimpleDFEReq2", 
-        lambda x: x["result"]["Resources"][0]["Attributes"]["Quantity"] == 4, API, "prepareReservation",
+        lambda x: x["result"]["Resources"][0]["Attributes"]["Size"] == 4, API, "prepareReservation",
        {
 			"Resources":[
 				  {
@@ -36,7 +35,7 @@ p2 = expect("getSimpleDFEReq2",
 						"Type":"DFECluster",
 						"NumInstances":1,
 						"Attributes":{
-						   "Quantity":4
+						   "Size":4
 						}
 				  }
 		   ],
@@ -45,7 +44,7 @@ p2 = expect("getSimpleDFEReq2",
 ) 
 
 p3 = expect("getSimpleDFEReq3", 
-        lambda x: x["result"]["Resources"][0]["Attributes"]["Quantity"] == 3, API, "prepareReservation",
+        lambda x: x["result"]["Resources"][0]["Attributes"]["Size"] == 3, API, "prepareReservation",
        {
 			"Resources":[
 				  {
@@ -53,7 +52,7 @@ p3 = expect("getSimpleDFEReq3",
 						"Type":"DFECluster",
 						"NumInstances":1,
 						"Attributes":{
-						   "Quantity":3
+						   "Size":3
 						}
 				  }
 		   ],
@@ -63,7 +62,7 @@ p3 = expect("getSimpleDFEReq3",
 
 
 expect("getSimpleDFEReq4", 
-        lambda x: x["result"]["Resources"][0]["Attributes"]["Quantity"] == 4, API, "prepareReservation",
+        lambda x: x["result"]["Resources"][0]["Attributes"]["Size"] == 4, API, "prepareReservation",
        {
 			"Resources":[
 				  {
@@ -71,7 +70,7 @@ expect("getSimpleDFEReq4",
 						"Type":"DFECluster",
 						"NumInstances":2,
 						"Attributes":{
-						   "Quantity":4
+						   "Size":4
 						}
 				  }
 		   ]
@@ -79,7 +78,7 @@ expect("getSimpleDFEReq4",
 ) 
 
 expect("getSimpleDFEReq8", 
-        lambda x: x["result"]["Resources"][0]["Attributes"]["Quantity"] == 8, API, "prepareReservation",
+        lambda x: x["result"]["Resources"][0]["Attributes"]["Size"] == 8, API, "prepareReservation",
        {
 			"Resources":[
 				  {
@@ -87,7 +86,7 @@ expect("getSimpleDFEReq8",
 						"Type":"DFECluster",
 						"NumInstances":1,
 						"Attributes":{
-						   "Quantity":8
+						   "Size":8
 						}
 				  }
 		   ]
@@ -103,7 +102,7 @@ expect("getSimpleDFEReq9_expect_fail",
 						"Type":"DFECluster",
 						"NumInstances":1,
 						"Attributes":{
-						   "Quantity":9
+						   "Size":9
 						}
 				  }
 		   ]
@@ -111,7 +110,7 @@ expect("getSimpleDFEReq9_expect_fail",
 ) 
 
 expect("getSimpleDFEReq_multiple_instances1", 
-        lambda x: ("ConfigID" in x["result"]) and (len(x["result"]["Resources"]) == 2) and x["result"]["Resources"][0]["Attributes"]["Quantity"] ==1, API, "prepareReservation",
+        lambda x: ("ConfigID" in x["result"]) and (len(x["result"]["Resources"]) == 2) and x["result"]["Resources"][0]["Attributes"]["Size"] ==1, API, "prepareReservation",
        {
 			"Resources":[
 				  {
@@ -119,7 +118,7 @@ expect("getSimpleDFEReq_multiple_instances1",
 						"Type":"DFECluster",
 						"NumInstances":2,
 						"Attributes":{
-						   "Quantity":1
+						   "Size":1
 						}
 				  }
 		   ]
@@ -127,7 +126,7 @@ expect("getSimpleDFEReq_multiple_instances1",
 ) 
 
 expect("getSimpleDFEReq_multiple_instances2", 
-        lambda x: ("ConfigID" in x["result"]) and (len(x["result"]["Resources"]) == 2) and x["result"]["Resources"][0]["Attributes"]["Quantity"] == 4, API, "prepareReservation",
+        lambda x: ("ConfigID" in x["result"]) and (len(x["result"]["Resources"]) == 2) and x["result"]["Resources"][0]["Attributes"]["Size"] == 4, API, "prepareReservation",
        {
 			"Resources":[
 				  {
@@ -135,7 +134,7 @@ expect("getSimpleDFEReq_multiple_instances2",
 						"Type":"DFECluster",
 						"NumInstances":2,
 						"Attributes":{
-						   "Quantity":4
+						   "Size":4
 						}
 				  }
 		   ]
@@ -151,7 +150,7 @@ expect("getSimpleDFEReq_multiple_instances3_expect_fail",
 						"Type":"DFECluster",
 						"NumInstances":3,
 						"Attributes":{
-						   "Quantity":4
+						   "Size":4
 						}
 				  }
 		   ]
@@ -159,7 +158,7 @@ expect("getSimpleDFEReq_multiple_instances3_expect_fail",
 ) 
 
 expect("getMultipleDFEReq1", 
-        lambda x: ("ConfigID" in x["result"]) and (len(x["result"]["Resources"]) == 2) and x["result"]["Resources"][0]["Attributes"]["Quantity"] == 2, API, "prepareReservation",
+        lambda x: ("ConfigID" in x["result"]) and (len(x["result"]["Resources"]) == 2) and x["result"]["Resources"][0]["Attributes"]["Size"] == 2, API, "prepareReservation",
        {
 			"Resources":[
 				  {
@@ -167,7 +166,7 @@ expect("getMultipleDFEReq1",
 						"Type":"DFECluster",
 						"NumInstances":1,
 						"Attributes":{
-						   "Quantity":2
+						   "Size":2
 						}
 				  },
 				  {
@@ -175,7 +174,7 @@ expect("getMultipleDFEReq1",
 						"Type":"DFECluster",
 						"NumInstances":1,
 						"Attributes":{
-						   "Quantity":3
+						   "Size":3
 						}
 				  }
 				  
@@ -184,7 +183,7 @@ expect("getMultipleDFEReq1",
 ) 
 
 expect("getMultipleDFEReq_multiple_instances1", 
-        lambda x: ("ConfigID" in x["result"]) and (len(x["result"]["Resources"]) == 5) and x["result"]["Resources"][0]["Attributes"]["Quantity"] == 2, API, "prepareReservation",
+        lambda x: ("ConfigID" in x["result"]) and (len(x["result"]["Resources"]) == 5) and x["result"]["Resources"][0]["Attributes"]["Size"] == 2, API, "prepareReservation",
        {
 			"Resources":[
 				  {
@@ -192,7 +191,7 @@ expect("getMultipleDFEReq_multiple_instances1",
 						"Type":"DFECluster",
 						"NumInstances":2,
 						"Attributes":{
-						   "Quantity":2
+						   "Size":2
 						}
 				  },
 				  {
@@ -200,7 +199,7 @@ expect("getMultipleDFEReq_multiple_instances1",
 						"Type":"DFECluster",
 						"NumInstances":3,
 						"Attributes":{
-						   "Quantity":1
+						   "Size":1
 						}
 				  }
 				  
@@ -209,7 +208,7 @@ expect("getMultipleDFEReq_multiple_instances1",
 ) 
 
 expect("getMultipleDFEReq_multiple_instances2", 
-        lambda x: ("ConfigID" in x["result"]) and (len(x["result"]["Resources"]) == 5) and x["result"]["Resources"][0]["Attributes"]["Quantity"] == 2, API, "prepareReservation",
+        lambda x: ("ConfigID" in x["result"]) and (len(x["result"]["Resources"]) == 5) and x["result"]["Resources"][0]["Attributes"]["Size"] == 2, API, "prepareReservation",
        {
 			"Resources":[
 				  {
@@ -217,7 +216,7 @@ expect("getMultipleDFEReq_multiple_instances2",
 						"Type":"DFECluster",
 						"NumInstances":2,
 						"Attributes":{
-						   "Quantity":2
+						   "Size":2
 						}
 				  },
 				  {
@@ -225,7 +224,7 @@ expect("getMultipleDFEReq_multiple_instances2",
 						"Type":"DFECluster",
 						"NumInstances":3,
 						"Attributes":{
-						   "Quantity":1
+						   "Size":1
 						}
 				  }
 				  

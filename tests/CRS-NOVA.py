@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from trest import expect
 
-API="http://localhost:5558"
+API="http://localhost:56789"
       
 expect("getResourceTypes", 
        lambda x: ("result" in x) and ("Types" in x["result"]) and (x["result"]["Types"][0]["Type"] == "Machine"), 
@@ -71,7 +71,7 @@ expect("getSimpleMachineReq2_expect_fail2",
   	          "GroupID": "ID0",          
              "Type":"Machine",
              "Attributes":
-                 { "Cores": 16,
+                 { "Cores": 43,
                    "Memory": 10694,
                    "Disk": 10
                  }
@@ -178,7 +178,7 @@ expect("getSimpleMachineReq_bound1",
 						"Type":"Machine",
 						"NumInstances":8,
 						"Attributes":
-				        { "Cores": 4,
+				        { "Cores": 1,
 		                "Memory": 50,
 		                "Disk": 5
 		              }

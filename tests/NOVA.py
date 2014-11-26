@@ -1,20 +1,15 @@
 #!/usr/bin/env python
 from trest import expect
 import json
-
-def getifip(ifn):
-    import socket, fcntl, struct
-    sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    return socket.inet_ntoa(fcntl.ioctl(sck.fileno(), 0x8915, struct.pack('256s', ifn[:15]))[20:24])
-    
-API="http://" + getifip("eth0") + ":8888"
+  
+API="http://localhost:8888"
 
 print "Using API: " + API
      
 r=expect("getAvailableResources", 
         lambda x: len(x["result"]["Resources"])>=1, API, "getAvailableResources")
 
-#print "AVAILABLE RESOURCES: ", r
+print "AVAILABLE RESOURCES: ", r
 
 expect("calculateResourceCapacity1",
         lambda x: x["result"]["Resource"]["Attributes"]["Cores"]==7, API, "calculateResourceCapacity",

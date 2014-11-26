@@ -8,71 +8,71 @@ expect("getResourceTypes",
        API, "getResourceTypes")
 
 expect("calculateResourceCapacity_simple_reserve",
-       lambda x: x["result"]["Attributes"]["Quantity"]==7, API, "calculateResourceCapacity",
+       lambda x: (x["result"]["Resource"]["Attributes"]["Size"]==7) and (x["result"]["Resource"]["Type"] == "DFECluster"), API, "calculateResourceCapacity",
        {
 			"Resource":
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":10
+						   "Size":10
 						}
 				  },
   	      "Reserve":
-  	         [ { "Attributes": { "Quantity": 3 } } ]
+  	         [ { "Attributes": { "Size": 3 } } ]
   	    }
 )	  
 
 
 expect("calculateResourceCapacity_multiple_reserves",
-       lambda x: x["result"]["Attributes"]["Quantity"]==5, API, "calculateResourceCapacity",
+       lambda x: x["result"]["Resource"]["Attributes"]["Size"]==5, API, "calculateResourceCapacity",
        {
 			"Resource":
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":10
+						   "Size":10
 						}
 				  },
   	      "Reserve":
-  	         [ { "Attributes": { "Quantity": 3 } },
-    	        { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 1 } }    	       
+  	         [ { "Attributes": { "Size": 3 } },
+    	        { "Attributes": { "Size": 1 } },
+    	        { "Attributes": { "Size": 1 } }    	       
   	         ]
   	    }
 )	
 
 expect("calculateResourceCapacity_multiple_reserves_to_zero",
-       lambda x: x["result"]["Attributes"]["Quantity"]==0, API, "calculateResourceCapacity",
+       lambda x: x["result"]["Resource"]["Attributes"]["Size"]==0, API, "calculateResourceCapacity",
        {
 			"Resource":
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":10
+						   "Size":10
 						}
 				  },
   	      "Reserve":
-  	         [ { "Attributes": { "Quantity": 3 } },
-    	        { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 6 } }    	       
+  	         [ { "Attributes": { "Size": 3 } },
+    	        { "Attributes": { "Size": 1 } },
+    	        { "Attributes": { "Size": 6 } }    	       
   	         ]
   	    }
 )	
 
 expect("calculateResourceCapacity_multiple_releases",
-       lambda x: x["result"]["Attributes"]["Quantity"]==20, API, "calculateResourceCapacity",
+       lambda x: x["result"]["Resource"]["Attributes"]["Size"]==20, API, "calculateResourceCapacity",
        {
 			"Resource":
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":10
+						   "Size":10
 						}
 				  },
   	      "Release":
-  	         [ { "Attributes": { "Quantity": 3 } },
-    	        { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 6 } }    	       
+  	         [ { "Attributes": { "Size": 3 } },
+    	        { "Attributes": { "Size": 1 } },
+    	        { "Attributes": { "Size": 6 } }    	       
   	         ]
   	    }
 )	
@@ -84,71 +84,71 @@ expect("calculateResourceCapacity_multiple_reserves_exceed_capacity",
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":10
+						   "Size":10
 						}
 				  },
   	      "Reserve":
-  	         [ { "Attributes": { "Quantity": 3 } },
-    	        { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 7 } }    	       
+  	         [ { "Attributes": { "Size": 3 } },
+    	        { "Attributes": { "Size": 1 } },
+    	        { "Attributes": { "Size": 7 } }    	       
   	         ]
   	    }
 )	
 
 expect("calculateResourceCapacity_multiple_reserves_releases_border",
-       lambda x: x["result"]["Attributes"]["Quantity"]==0, API, "calculateResourceCapacity",
+       lambda x: x["result"]["Resource"]["Attributes"]["Size"]==0, API, "calculateResourceCapacity",
        {
 			"Resource":
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":10
+						   "Size":10
 						}
 				  },
   	      "Reserve":
-  	         [ { "Attributes": { "Quantity": 3 } },
-    	        { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 7 } }    	       
+  	         [ { "Attributes": { "Size": 3 } },
+    	        { "Attributes": { "Size": 1 } },
+    	        { "Attributes": { "Size": 7 } }    	       
   	         ],
   	      "Release":
-  	         [ { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 0 } },
-    	        { "Attributes": { "Quantity": 0 } }    	       
+  	         [ { "Attributes": { "Size": 1 } },
+    	        { "Attributes": { "Size": 0 } },
+    	        { "Attributes": { "Size": 0 } }    	       
   	         ]  	         
   	    }
 )	
 
 expect("calculateResourceCapacity_multiple_reserves_releases_with_5_left",
-       lambda x: x["result"]["Attributes"]["Quantity"]==5, API, "calculateResourceCapacity",
+       lambda x: x["result"]["Resource"]["Attributes"]["Size"]==5, API, "calculateResourceCapacity",
        {
 			"Resource":
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":10
+						   "Size":10
 						}
 				  },
   	      "Reserve":
-  	         [ { "Attributes": { "Quantity": 3 } },
-    	        { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 7 } }    	       
+  	         [ { "Attributes": { "Size": 3 } },
+    	        { "Attributes": { "Size": 1 } },
+    	        { "Attributes": { "Size": 7 } }    	       
   	         ],
   	      "Release":
-  	         [ { "Attributes": { "Quantity": 1 } },
-    	        { "Attributes": { "Quantity": 2 } },
-    	        { "Attributes": { "Quantity": 3 } }    	       
+  	         [ { "Attributes": { "Size": 1 } },
+    	        { "Attributes": { "Size": 2 } },
+    	        { "Attributes": { "Size": 3 } }    	       
   	         ]  	         
   	    }
 )	
 
 expect("calculateResourceAgg_single",
-       lambda x: x["result"]["Attributes"]["Quantity"] == 10, API, "calculateResourceAgg",
+       lambda x: x["result"]["Attributes"]["Size"] == 10, API, "calculateResourceAgg",
        {
 			"Resources": [
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":10
+						   "Size":10
 						}
 				  }
 	      ]
@@ -157,19 +157,19 @@ expect("calculateResourceAgg_single",
 )
 
 expect("calculateResourceAgg_multi",
-       lambda x: x["result"]["Attributes"]["Quantity"] == 23, API, "calculateResourceAgg",
+       lambda x: x["result"]["Attributes"]["Size"] == 23, API, "calculateResourceAgg",
        {
 			"Resources": [
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":10
+						   "Size":10
 						}
 				  },
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":13
+						   "Size":13
 						}
 				  }
 				  

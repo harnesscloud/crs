@@ -8,7 +8,7 @@ expect("releaseAllResources",
        lambda x: x["result"] == {}, API, "releaseAllResources")
 
 av=expect("getAvailableResources", 
-        lambda x: x["result"]["Resources"][0]["Attributes"]["Quantity"] == 8, API, "getAvailableResources")
+        lambda x: x["result"]["Resources"][0]["Attributes"]["Size"] == 8, API, "getAvailableResources")
 
 r1=expect("reserveDFE-1",
         lambda x: len(x["result"]["Reservations"]) == 1, API, "reserveResources",
@@ -17,7 +17,7 @@ r1=expect("reserveDFE-1",
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":1
+						   "Size":1
 						}
 				  }
 		   ]
@@ -31,7 +31,7 @@ r2=expect("reserveDFE-5",
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":5
+						   "Size":5
 						}
 				  }
 		   ]
@@ -45,7 +45,7 @@ expect("reserveDFE-3_to_fail",
 				  {
 						"Type":"DFECluster",
 						"Attributes":{
-						   "Quantity":3
+						   "Size":3
 						}
 				  }
 		   ]
