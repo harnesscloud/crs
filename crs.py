@@ -4,8 +4,6 @@ from flask import Flask, request, render_template
 from crs_engine import scheduler
 import json, sys
 
-# from httplib import NotConnected
-
 webserver = Flask(__name__)
 
 @webserver.template_filter('res_id')
