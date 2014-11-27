@@ -653,7 +653,7 @@ class Scheduler:
 				IRMs[allocs[i]["IRM"]] = True
 				result = allocs[i]["IRM"].conn.requestPost("/releaseResources", {"Reservations":reservation.InfrastructureReservationIDs[i]})
 				result = json.loads(result)
-				if ("error" in result) or (result["result"] != {}):
+				if result["result"] != {}:
 				   raise Exception("could not remove all resources!")
 			return {}      
 			  
