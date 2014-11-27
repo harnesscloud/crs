@@ -94,7 +94,7 @@ expect("getSimpleMachineReq3",
 						"Attributes":
 				        { "Cores": 2,
 		                "Memory": 200,
-		                "Disk": 10
+		                "Disk": 1
 		              }
 				  }
 		   ]
@@ -113,7 +113,7 @@ expect("getSimpleMachineReq4",
 						"Attributes":
 				        { "Cores": 2,
 		                "Memory": 200,
-		                "Disk": 10
+		                "Disk": 1
 		              }
 				  },
 			  {
@@ -123,7 +123,7 @@ expect("getSimpleMachineReq4",
 						"Attributes":
 				        { "Cores": 3,
 		                "Memory": 200,
-		                "Disk": 10
+		                "Disk": 1
 		              }
 				  }				  
 		   ]
@@ -180,7 +180,7 @@ expect("getSimpleMachineReq_bound1",
 						"Attributes":
 				        { "Cores": 1,
 		                "Memory": 50,
-		                "Disk": 5
+		                "Disk": 1
 		              }
 				  }				  
 		   ]
@@ -218,7 +218,7 @@ p0=expect("getSimpleMachineReq5",
 						"Attributes":
 				        { "Cores": 5,
 		                "Memory": 50,
-		                "Disk": 5
+		                "Disk": 1
 		              }
 				  }				  
 		   ]

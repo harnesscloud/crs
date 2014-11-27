@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import json, httplib, sys, uuid
+import json, requests, sys, uuid
 from threading import Thread, Lock
 import operator
 import logging
@@ -37,39 +37,21 @@ class Connection(object):
     """This is a wrapper for http connections"""
     
     def __init__(self, data):
-        hostname, port = data["Hostname"], data["Port"]
-        try:    
-            self.conn = httplib.HTTPConnection(hostname, str(port), timeout=None)
-        except:
-            raise Exception("HTTPConnection problem", hostname, port)  
+       self.URL = "http://" + data["Hostname"] + ":" + str(data["Port"])
         
-    """Use this function to send request to an http server"""
     def requestPost(self, url, body):
         try:  
-            #print "\n*****************\nsent to IRM"
-            #print "URL:", url, "\nBODY:", body
-            #self.conn.request("POST", "/method" + url, json.dumps({"result" : body}), {"Content-type":"application/json"})
-            self.conn.request("POST", "/method" + url, json.dumps(body), {"Content-type":"application/json"})
-            response = self.conn.getresponse()
-        except:
+            #self.conn.request("POST", "/method" + url, json.dumps(body), {"Content-type":"application/json"})         
+            #response = self.conn.getresponse()
+            result = requests.post(self.URL + "/method" + url, json.dumps(body), headers={'content-type': 'application/json'})
+        except Exception, msg:
+            print "HTTPConnection request problem: ", msg, url, body
             raise Exception("HTTPConnection request problem", url, body)  
-        response = response.read()
+        response = result.text
         #print "\n*****************"
         print "URL:", url, "\nRESPONSE:",  response
         return response
     
-    def requestGet(self, url):
-        try:    
-            self.conn.request("GET", url)
-            response = self.conn.getresponse()
-        except:
-            raise Exception("HTTPConnection request problem", url)  
-        return response.read()
-    
-    """Call this function if you do not access to the http server anymore"""
-    def close(self):
-        self.conn.close()
-
 # ==============================================================
 
 class BaseClass:
