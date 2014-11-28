@@ -27,11 +27,10 @@ def run_webserver(hostname, port):
 def status():
    try:
       IRMs = scheduler.IRMs
-      DCs = scheduler.datacenters
       Reservations = scheduler.reservations
       #index_res = filter(lambda i:"InfrastructureReservationIDs" in dir(Reservations[i]), sorted(Reservations.keys(), reverse=True))
       index_res = sorted(Reservations.keys(), reverse=True)
-      return render_template('index.html', IRMs=IRMs, DCs=DCs, RES=Reservations, INDEX_RES=index_res)
+      return render_template('index.html', IRMs=IRMs, RES=Reservations, INDEX_RES=index_res)
    except Exception, msg:
       print "[x] ", str(msg)
        
@@ -126,7 +125,7 @@ def releaseAllReservations():
     
 @webserver.route("/method/refresh", methods=["POST", "GET"])
 def refresh():
-    result = json.dumps({"result":scheduler.refresh({})})
+    result = json.dumps({"result":scheduler.refresh_resources()})
     return result
                   
 if __name__ == "__main__":
@@ -136,8 +135,8 @@ if __name__ == "__main__":
         CRS_HOST=sys.argv[1]
         CRS_PORT=sys.argv[2]
     else:
-        CRS_HOST='localhost'
-        CRS_PORT='5558'
+        CRS_HOST='0.0.0.0'
+        CRS_PORT='56789'
     
     run_webserver(CRS_HOST, CRS_PORT)
 

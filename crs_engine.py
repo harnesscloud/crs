@@ -54,60 +54,26 @@ class Connection(object):
     
 # ==============================================================
 
-class BaseClass:
-    def __init__(self, data={}):
+class Resource:
+    def __init__(self, data, irm={}):
         for key in data:
             self.__dict__[key] = data[key]
+        self.data = data
+        self.irm = irm
     
     def getType(self):
-        if self.Type == "Storage":
-            return "Storage_"+self.Attributes["AccessType"]
-        else:
-            return self.Type
+       return self.Type
         
 
     def getJson_calculateResource(self):
         d = { "Type" : self.__dict__["Type"], "Attributes" : self.__dict__["Attributes"] }
-
-        #if "GroupID" in self.__dict__:
-        #    d["GroupID"] = self.__dict__["GroupID"]
         return d
     
     def getJson_reserveResources(self):
         return { "ID" : self.__dict__["ID"], "IP" : self.__dict__["IP"], "Type" : self.__dict__["Type"], "Attributes" : self.__dict__["Attributes"] }
-        # print "$$$$ %s" % self.__dict__
-        # d = { "ID" : self.__dict__["ID"], "IP" : self.__dict__["IP"], "Type" : self.__dict__["Type"], "Attributes" : self.__dict__["Attributes"] }
-        # if 'Image' in  self.__dict__:
-        #     d['Image'] = self.__dict__["Image"]
-        # return d
         
     
-    def satisfy(self, request={}):
-        if self.getType() != request.getType():
-            return False
-        for key, v_req in request.Attributes.items():
-            if key in self.Attributes:
-                v_res = self.Attributes[key]
-                print "v_res %s" % v_res
-                if type(v_res) == unicode:
-                    if v_res != v_req:
-                        return False
-                elif (type(v_res) == int or type(v_res) == float):
-                    if v_req > v_res:
-                        return False
-                elif type(v_res) == list:
-                    one_satisfies = False
-                    for x in v_res:
-                        if v_req <= x:
-                            one_satisfies = True
-                            break
-                    if not one_satisfies:
-                        return False
-            else:
-                raise Exception("Unrecognized item !") 
-        return True
-
-
+'''
 # ==============================================================          
 
 class Rack:    
@@ -121,7 +87,7 @@ class Rack:
         self.distances = {}
         
     def addResource(self, data, irm):
-        resource = BaseClass(data)
+        resource = Resource(data)
         resource.irm = irm
         resource.distances = {}
         self.resources[data["ID"]] = resource
@@ -195,12 +161,13 @@ class DataCenter:
             if resource is not None:
                 break
         return resource
-    
+'''    
 # ==============================================================
 
 class IRM:
     def __init__(self, data):
         self.ID = data["Hostname"] + str(data["Port"])
+        self.Resources = { }
         self.Hostname = data["Hostname"]
         self.Port = data["Port"]
         if "Name" in data:
@@ -215,79 +182,48 @@ class IRM:
         data = json.loads(data)
         data = data["result"]["Types"]
         return data
-        
-    def listResources(self, datacenters):
-       resources = {}
-       for d in datacenters:
-          for r in datacenters[d].racks:
-             if self.ID in datacenters[d].racks[r].irm_resources:
-                res = datacenters[d].racks[r].irm_resources[self.ID]      
-                resources = dict(resources.items() + res.items()) 
-       return resources      
-       
+                  
     
-    
-    def getAvailableResources(self, datacenters = {}):
+    def getAvailableResources(self):
         data = self.conn.requestPost("/getAvailableResources", {})
         harness_request("Discovery", "CRS", self.Name, "Get available resources")
         data = json.loads(data)
         data = data["result"]
-        set_racks = set()
-        set_datacenters = set()
+    
         set_IPs = set()
         set_Types = set()
-        for d in data["Resources"]:
-            _, datacenterID, rackID, _, _, _ = d["ID"].split('/')
-            
-            datacenter = datacenters.get(datacenterID)
-            if datacenter is None:
-                datacenter = DataCenter(datacenterID)
-                datacenters[datacenterID] = datacenter
-            set_datacenters.add(datacenter)
-            rack = datacenter.racks.get(rackID)
-            if rack is None:
-                rack = Rack(rackID, datacenter)
-                datacenter.racks[rackID] = rack
-            
-            set_racks.add(rack)
-            rack.addResource(d, self)
-            set_IPs.add(d["IP"])
-            set_Types.add(d["Type"])
-         
-        harness_reply("Discovery",  self.Name, "CRS", str(set_Types).replace('set', '') + ":" + str(set_IPs).replace('set',''))         
-            
-        #print datacenters
-        #for rack in set_racks:
-        #    rack.calculateResourceAgg()
-        #for datacenter in set_datacenters:
-        #    datacenter.calculateResourceAgg()
-        #print "\ngetAvailableResources done\n"
-        return datacenters
-        
 
+        for d in data["Resources"]:
+           self.Resources[d["ID"]] = Resource(d, self)
+           set_IPs.add(d["IP"])
+           set_Types.add(d["Type"])
+
+        harness_reply("Discovery",  self.Name, "CRS", str(set_Types).replace('set', '') + ":" + 
+                      str(set_IPs).replace('set',''))         
+            
 # ==============================================================
 
 class Reservation:
 	id_reservation_max = 0 # variable used for reservation number management
 	id_reservations = [] # available reservation number candidates for newly received reservations
 
-	def __init__(self, data={}):
+	def __init__(self, data={}):              
 		self.id_ = self.getIdReservation()
 		self.requests = {}
 		self.aggregatedResources = {}
 		self.distanceSpecified = False
+
 		for d in data["Resources"]:
 			if "GroupID" not in d:
 				d["GroupID"] = "G" + os.urandom(5)
 			if "NumInstances" not in d:
 				d["NumInstances"] = 1
-			self.requests[d["GroupID"]] = BaseClass(d)
+			self.requests[d["GroupID"]] = Resource(d)
 			self.requests[d["GroupID"]].distance = sys.maxint
 			if "Image" in d:	
 				self.requests[d["GroupID"]].Image = d["Image"]
 			if "UserData" in d:
 				self.requests[d["GroupID"]].UserData = d["UserData"]
-					
 			if not (d["Type"] in self.aggregatedResources):
 				self.aggregatedResources[d["Type"]] = self.aggregate_res_description({}, d["Attributes"], d["NumInstances"])
 			else:
@@ -355,8 +291,7 @@ class Reservation:
 
 class Scheduler:
     def __init__(self):
-        self.IRMs = []
-        self.datacenters = {}
+        self.IRMs = { }
         self.reservations = {}
         harness_note("Discovery", "CRS", "Ready!")
         with open('crs.constraints') as f:
@@ -372,14 +307,11 @@ class Scheduler:
     def addManager(self, data):
         if data["Manager"] == "IRM":
             irm = IRM(data)
-            self.IRMs.append(irm)
+            self.IRMs[irm.ID] = irm
             log("Adding IRM: " + irm.Name)
 
             harness_reply("Discovery", irm.Name, "CRS", "Register " + irm.Name.replace("-","_"))
-            
-            Thread(target=self.getDelayAvailableResources, args=[len(self.IRMs) - 1]).start()
-        elif data["Manager"] == "NetworkMonitor":
-            self.networkMonitor = NetworkMonitor(data, self.datacenters)
+            Thread(target=self.getDelayAvailableResources, args=[irm.ID]).start()
 
         return {}
     
@@ -388,24 +320,15 @@ class Scheduler:
         import time
         
         time.sleep(2)
-        self.datacenters.update(self.IRMs[index].getAvailableResources(self.datacenters))
+        self.IRMs[index].getAvailableResources()
            
     def getResourceTypes(self):
         result = { "Types" : [] }
         for irm in self.IRMs:
-            r = irm.getResourceTypes()
+            r = self.IRMs[irm].getResourceTypes()
             result["Types"].extend(r) 
         return result    
-    
-    def print_all_available_resources(self):
-		print "\n-----------\nResources:\n-------------\n"
-		for dc in self.datacenters.values():
-			print dc
-			for rack in dc.racks.values():
-				print rack.resourcesTotal
-				#print rack.resources
-		print "\n-----------\n"
-		
+    		
 	 # TODO: this should take into account the data types	of the attributes!
     def satisfies(self, available_res = {}, requested_res = {}):
 		q = True
@@ -444,25 +367,18 @@ class Scheduler:
        return ips
     
     def prepareReservation(self, data):
-
-		self.refresh({})
+		self.refresh_resources()
+                print "I am here..."
 		reservation = Reservation(data)		
+		print "I am there..."
 		self.reservations[reservation.id_] = reservation
-			
+		print "I am there2..."
 		candidates = []
 		
-		for dc in self.datacenters.values():
-			#print "Racks: ", dc.racks.values()
-			for rack in dc.racks.values():
-				#print "Total res available :",rack.resourcesTotal
-				#print "Res req :", reservation.requests.values()
-				#print "Agg request :", reservation.aggregatedResources
-				#print "rack.resourcesTotal = ", rack.resourcesTotal
-            
-            # self.satisfies is not checking for types of attributes, disabling
-				if True: #self.satisfies(rack.resourcesTotal, reservation.aggregatedResources): 
-					candidates.extend(rack.resources.values())
-					
+		
+		for i in self.IRMs:               
+		   candidates.extend(self.IRMs[i].Resources.values())
+		print "::::>" , candidates			
 		reserved_res = {}
 		# for each rack that has enough resources
 
@@ -663,15 +579,22 @@ class Scheduler:
     def releaseAllReservations(self, data):
        try:
           for irm in self.IRMs:
-             result = json.loads(irm.conn.requestPost("/releaseAllResources", {}))
+             result = json.loads(self.IRMs[irm].conn.requestPost("/releaseAllResources", {}))
           return { }       
        except Exception, msg:
 		   return {"error": str(msg)}		
 		   
-    def refresh(self, data):
-       try:
-          for irm in self.IRMs:
-             self.datacenters.update(irm.getAvailableResources(self.datacenters))
+    def refresh_resources(self):
+       try:           
+          blacklist = []
+          for i in self.IRMs:
+             try:
+                self.IRMs[i].getAvailableResources()
+             except:
+                 blacklist.append(i)  
+          for i in blacklist:
+              print "cannot connect to IRM " + self.IRMs[i].ID + "... removing it!"
+              self.IRMs.pop(i)
           return { }       
        except Exception, msg:
 		   return {"error": str(msg)}		

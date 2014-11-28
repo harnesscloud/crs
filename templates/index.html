@@ -3,11 +3,11 @@
 {% block avail_res %}
 <h2> Available Resources </h2>
     {% for irm in IRMs %}
-       <h3>{{irm.Name}} (http://{{irm.Hostname}}:{{irm.Port}})</h3>
+       <h3>{{IRMs[irm].Name}} (http://{{IRMs[irm].Hostname}}:{{IRMs[irm].Port}})</h3>
        <h4>Resources</h4>
        <ol>
-       {% for res  in irm.listResources(DCs) %}  
-          <li><b>{{irm.listResources(DCs)[res].ID|res_id}}</b>: {{irm.listResources(DCs)[res].Type}} ({{irm.listResources(DCs)[res].IP}}) - ({{irm.listResources(DCs)[res].Attributes|tojson}}              
+       {% for res  in IRMs[irm].Resources %}  
+          <li><b>{{IRMs[irm].Resources[res].ID|res_id}}</b>: {{IRMs[irm].Resources[res].Type}} ({{IRMs[irm].Resources[res].IP}}) - ({{IRMs[irm].Resources[res].Attributes|tojson}}              
        {% endfor %}          
        </ol>
     {% else %}
