@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import json, requests, sys, uuid
+import json, requests, sys, uuid, socket
 from threading import Thread, Lock
 import operator
 import logging
@@ -165,8 +165,11 @@ class DataCenter:
 # ==============================================================
 
 class IRM:
-    def __init__(self, data):
-        self.ID = data["Hostname"] + str(data["Port"])
+    def __init__(self, data, remote_ip):
+
+        host, _, _ = socket.gethostbyaddr(remote_ip)
+        self.ID = host + ":" + str(data["Port"])
+  
         self.Resources = { }
         self.Hostname = data["Hostname"]
         self.Port = data["Port"]
@@ -304,11 +307,11 @@ class Scheduler:
     def __del__(self):
         pass
 
-    def addManager(self, data):
+    def addManager(self, data, remote_ip):
         if data["Manager"] == "IRM":
-            irm = IRM(data)
+            irm = IRM(data, remote_ip)
             self.IRMs[irm.ID] = irm
-            log("Adding IRM: " + irm.Name)
+            log("Adding IRM: " + irm.Name + "( " + remote_ip + ")")
 
             harness_reply("Discovery", irm.Name, "CRS", "Register " + irm.Name.replace("-","_"))
             Thread(target=self.getDelayAvailableResources, args=[irm.ID]).start()

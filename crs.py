@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 from flask import Flask, request, render_template
+from time import sleep
 
 from crs_engine import scheduler
 import json, sys
 
 webserver = Flask(__name__)
+
+needs_refresh = False
 
 @webserver.template_filter('res_id')
 def res_id(id):
@@ -40,7 +43,7 @@ def addManager():
 #    print "\n================="
 #    print "URL: addManager"
 #    print "BODY:", request.data
-    result = json.dumps({"result":scheduler.addManager(json.loads(request.data))})
+    result = json.dumps({"result":scheduler.addManager(json.loads(request.data), request.remote_addr)})
 #    print "\n================="
 #    print "URL: addManager"
 #    print "RESULT:"
@@ -114,6 +117,7 @@ def releaseReservation():
     
 @webserver.route("/method/releaseAllReservations", methods=["POST", "GET"])
 def releaseAllReservations():
+    global needs_refresh
     print "\n================="
     print "URL: releaseAllReservations"
     print "BODY:", request.data
@@ -121,12 +125,15 @@ def releaseAllReservations():
     print "\n================="
     print "URL: releaseAllReservations"
     print "RESULT:", result
+    needs_refresh = True
     return result
     
 @webserver.route("/method/refresh", methods=["POST", "GET"])
 def refresh():
     result = json.dumps({"result":scheduler.refresh_resources()})
     return result
+
+ 
                   
 if __name__ == "__main__":
     global CRS_HOST, CRS_PORT
@@ -139,4 +146,5 @@ if __name__ == "__main__":
         CRS_PORT='56789'
     
     run_webserver(CRS_HOST, CRS_PORT)
+
 
