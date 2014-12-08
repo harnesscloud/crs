@@ -371,11 +371,8 @@ class Scheduler:
     
     def prepareReservation(self, data):
 		self.refresh_resources()
-                print "I am here..."
 		reservation = Reservation(data)		
-		print "I am there..."
 		self.reservations[reservation.id_] = reservation
-		print "I am there2..."
 		candidates = []
 		
 		
@@ -423,14 +420,13 @@ class Scheduler:
 					to_substract = []
 					
 					# set attributes added from previous schedule for this resource (resource.ID)
-					expanded_allocations = []						
+					expanded_allocations = []					         	
 					for allocs in reserved_res.values():
-						expanded_allocations.extend(allocs)						
+						expanded_allocations.extend(allocs)			
 					for j in range(len(expanded_allocations)):
 						if expanded_allocations[j]["Allocation"]["ID"] == resource.ID:
-							to_substract.append({"Attributes" : reservation.requests[key].Attributes})		
-					to_substract.append({"Attributes" : reservation.requests[key].Attributes})
-					print "to_substract = ", to_substract
+							to_substract.append({"Attributes" : expanded_allocations[j]["Allocation"]["Attributes"]})		
+					to_substract.append({"Attributes" : reservation.requests[key].Attributes})                                            
 					irm_req = {"Resource" : resource.getJson_calculateResource(), "Reserve" : to_substract, "Release" : []}
 					#request calculate capacity to irm
 					#try:
