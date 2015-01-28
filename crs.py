@@ -2,7 +2,7 @@
 from flask import Flask, request, render_template
 from time import sleep
 
-from crs_engine import scheduler
+from crs_engine import scheduler,logger,log
 import json, sys
 
 webserver = Flask(__name__)
@@ -40,101 +40,72 @@ def status():
 
 @webserver.route("/method/addManager", methods=["POST"])
 def addManager():
-#    print "\n================="
-#    print "URL: addManager"
-#    print "BODY:", request.data
+    log("COMM|CRS-REQ|addManager|" + request.data)
     result = json.dumps({"result":scheduler.addManager(json.loads(request.data), request.remote_addr)})
-#    print "\n================="
-#    print "URL: addManager"
-#    print "RESULT:"
+    log("COMM|CRS-RET|addManager|" + result)
     return result
     
 @webserver.route("/method/getResourceTypes", methods=["POST"])
 def getResourceTypes():
-#    print "\n================="
-#    print "URL: getResourceTypes"
-#    print "BODY:", request.data
-    # "result:" is already included in the reply of IRM
+    log("COMM|CRS-REQ|getResourceTypes|" + request.data)
     result = json.dumps({"result":scheduler.getResourceTypes()})
-#    print "\n================="
-#    print "URL: getResourceTypes"
-#    print "RESULT:", result
+    log("COMM|CRS-RET|getResourceTypes|" + result)    
     return result
     
 @webserver.route("/method/prepareReservation", methods=["POST"])
 def prepareReservation():
     try:
-		 print "\n================="
-		 print "URL: prepareReservation"
-		 print "BODY:", request.data
-		 result = json.dumps({"result":scheduler.prepareReservation(json.loads(request.data))})
-		 print "\n================="
-		 print "URL: prepareReservation"
-		 print "RESULT:", result
-		 return result
+       log("COMM|CRS-REQ|prepareReservation|" + request.data)
+       result = json.dumps({"result":scheduler.prepareReservation(json.loads(request.data))})
+       log("COMM|CRS-RET|prepareReservation|" + result) 
+       return result
     except Exception, msg:
 		return { "error: ", str(msg) }	 
 
 @webserver.route("/method/discardConfiguration", methods=["POST"])
 def discardConfiguration():
-    print "\n================="
-    print "URL: discardConfiguration"
-    print "BODY:", request.data
+    log("COMM|CRS-REQ|discardConfiguration|" + request.data)
     result = json.dumps({"result":scheduler.discardConfiguration(json.loads(request.data))})
-    print "\n================="
-    print "URL: discardConfiguration"
-    print "RESULT:", result
+    log("COMM|CRS-RET|discardConfiguration|" + result) 
     return result
         
 @webserver.route("/method/createReservation", methods=["POST"])
 def createReservation():
-    print "\n================="
-    print "URL: createReservation"
-    print "BODY:", request.data
+    log("COMM|CRS-REQ|createReservation|" + request.data)
     result = json.dumps({"result":scheduler.createReservation(json.loads(request.data))})
-    print "RESULT:", result
+    log("COMM|CRS-RET|createReservation|" + result) 
     return result
 
 @webserver.route("/method/checkReservation", methods=["POST"])
 def checkReservation():
-    print "\n================="
-    print "URL: checkReservation"
-    print "BODY:", request.data
+    log("COMM|CRS-REQ|checkReservation|" + request.data)
     result = json.dumps({"result":scheduler.checkReservation(json.loads(request.data))})
-    print "RESULT:", result
+    log("COMM|CRS-RET|checkReservation|" + result) 
     return result
 
 @webserver.route("/method/releaseReservation", methods=["POST"])
 def releaseReservation():
-    print "\n================="
-    print "URL: releaseReservation"
-    print "BODY:", request.data
+    log("COMM|CRS-REQ|releaseReservation|" + request.data)
     result = json.dumps({"result":scheduler.releaseReservation(json.loads(request.data))})
-    print "\n================="
-    print "URL: releaseReservation"
-    print "RESULT:", result
+    log("COMM|CRS-RET|releaseReservation|" + result) 
     return result
     
 @webserver.route("/method/releaseAllReservations", methods=["POST", "GET"])
 def releaseAllReservations():
     global needs_refresh
-    print "\n================="
-    print "URL: releaseAllReservations"
-    print "BODY:", request.data
+    log("COMM|CRS-REQ|releaseAllReservations|" + request.data)
     result = json.dumps({"result":scheduler.releaseAllReservations({})})
-    print "\n================="
-    print "URL: releaseAllReservations"
-    print "RESULT:", result
+    log("COMM|CRS-RET|releaseAllReservations|" + result) 
     needs_refresh = True
     return result
     
 @webserver.route("/method/refresh", methods=["POST", "GET"])
 def refresh():
+    log("COMM|CRS-REQ|refresh|" + request.data)
     result = json.dumps({"result":scheduler.refresh_resources()})
+    log("COMM|CRS-RET|refresh|" + result) 
     return result
-
- 
-                  
+              
 if __name__ == "__main__":
     global CRS_HOST, CRS_PORT
     if len(sys.argv) == 3:
