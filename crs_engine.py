@@ -43,11 +43,13 @@ class Connection(object):
         try:  
             #self.conn.request("POST", "/method" + url, json.dumps(body), {"Content-type":"application/json"})         
             #response = self.conn.getresponse()
+            log("COMM|POST|" + url + "|" + str(json.dumps(body)))
             result = requests.post(self.URL + "/method" + url, json.dumps(body), headers={'content-type': 'application/json'})
         except Exception, msg:
             print "HTTPConnection request problem: ", msg, url, body
             raise Exception("HTTPConnection request problem", url, body)  
         response = result.text
+        log("COMM|RCV|" + url + "|" + response)
         #print "\n*****************"
         print "URL:", url, "\nRESPONSE:",  response
         return response
