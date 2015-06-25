@@ -13,7 +13,7 @@
 <script type="text/javascript">
 
 
-setInterval(function(){
+var ihandle=setInterval(function(){
    update();
 }, 3000);
 
@@ -21,7 +21,7 @@ setInterval(function(){
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;}
 .tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
-.tg th{font-family:Arial, sans-serif;font-size:12px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
+.tg th{font-family:Arial, sans-serif;font-size:12px;font-weight:normal;padding:2px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
 .tg .tg-9wi7{font-weight:bold;font-size:12px;background-color:#fffc9e;text-align:center}
 .tg .tg-kr94{font-size:12px;text-align:center}
 .tg .tg-k6pi{font-size:12px}
@@ -33,7 +33,6 @@ setInterval(function(){
     <img src="http://www.harness-project.eu/wp-content/uploads/2013/03/LOGO.png" alt="Logo" height="100" style="max-width: 120px;"\>
     <h1>CRS Frontend (v3) </h1>
     
-  
 <script>	
 	function update() {
 		var request = $.ajax({
@@ -69,46 +68,7 @@ setInterval(function(){
 		});
 
 		request.fail(function(jqXHR, textStatus) {
-			alert( "Request failed: " + textStatus );
-		});
-	}
-</script>
-
-<script>	
-	function update() {
-		var request = $.ajax({
-			url: $SCRIPT_ROOT + "/status/data",
-			type: "GET",			
-			dataType: "json",
-			success: function(data) {
-			   var section = $("#resources").empty();
-			   var managers = data["result"]["managers"]
-			   var resources = data["result"]["resources"]
-			   var n = 1;
-			   if (Object.keys(managers).length == 0) {
-			      $("<h3>No IRMs have been registered!</h3>").appendTo(section);
-			   } else {
-			      $.each(managers, function(i, v) {
-			         var hdr = $("<h5>").appendTo(section);
-			         hdr.append(n + ". " + v["Name"] + " (" + v["Address"] + ": " + 
-			                    v["Port"] + " / " + v["ManagerID"] + ")");
-			         var table = $("<table class='tg'>").appendTo(section);
-			         $("<tr><th class='tg-9wi7'>ID</th>" +
-			           "<th class='tg-9wi7'>Type</th>"   +
-			           "<th class='tg-9wi7'>Attributes</th></tr>").appendTo(table);
-                  $.each(resources[i], function(j, r) {
-    			         $("<tr><th class='tg-kr94'>" + j + "</th>" +
-			              "<th class='tg-kr94'>" + r['Type'] + "</th>"   +
-			              "<th class='tg-kr94'>" + JSON.stringify(r['Attributes']) + "</th></tr>")
-			              .appendTo(table); 
-			         });                
-			         n++;
-			      });
-			  }
-			}
-		});
-
-		request.fail(function(jqXHR, textStatus) {
+		   clearInterval(ihandle);
 			alert( "Request failed: " + textStatus );
 		});
 	}

@@ -9,21 +9,18 @@ from hresman.manager import HarnessResourceManager
 from status_view import StatusView
 from crs_managers_view import CRSManagersView
 from crs_resources_view import CRSResourcesView
-
+from crs_reservations_view import CRSReservationsView
+import simple_scheduler
           
 crs_views=[CRSManagersView,  \
            StatusView, \
-           CRSResourcesView \
+           CRSResourcesView, \
+           CRSReservationsView
           ]
+          
+CRSReservationsView._scheduler=simple_scheduler.schedule
 
 mgr = HarnessResourceManager(crs_views)
-app = mgr.app
-
-@app.template_filter('res_id')
-def res_id(id):
-   ids = id.split('/')    
-   return ids[len(ids)-1]
-       
 mgr.run(56789)
 
    
