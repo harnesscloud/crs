@@ -1,24 +1,167 @@
-{% extends "base.html" %}
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CRS Frontend </title>
 
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+
+<input type="hidden" id="refreshed" value="no">
+<script type="text/javascript">
+
+
+setInterval(function(){
+   update();
+}, 3000);
+
+</script>
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
+.tg th{font-family:Arial, sans-serif;font-size:12px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
+.tg .tg-9wi7{font-weight:bold;font-size:12px;background-color:#fffc9e;text-align:center}
+.tg .tg-kr94{font-size:12px;text-align:center}
+.tg .tg-k6pi{font-size:12px}
+</style>
+    
+</head>
+
+<body>
+    <img src="http://www.harness-project.eu/wp-content/uploads/2013/03/LOGO.png" alt="Logo" height="100" style="max-width: 120px;"\>
+    <h1>CRS Frontend (v3) </h1>
+    
+  
+<script>	
+	function update() {
+		var request = $.ajax({
+			url: $SCRIPT_ROOT + "/status/data",
+			type: "GET",			
+			dataType: "json",
+			success: function(data) {
+			   var section = $("#resources").empty();
+			   var managers = data["result"]["managers"]
+			   var resources = data["result"]["resources"]
+			   var n = 1;
+			   if (Object.keys(managers).length == 0) {
+			      $("<h3>No IRMs have been registered!</h3>").appendTo(section);
+			   } else {
+			      $.each(managers, function(i, v) {
+			         var hdr = $("<h5>").appendTo(section);
+			         hdr.append(n + ". " + v["Name"] + " (" + v["Address"] + ": " + 
+			                    v["Port"] + " / " + v["ManagerID"] + ")");
+			         var table = $("<table class='tg'>").appendTo(section);
+			         $("<tr><th class='tg-9wi7'>ID</th>" +
+			           "<th class='tg-9wi7'>Type</th>"   +
+			           "<th class='tg-9wi7'>Attributes</th></tr>").appendTo(table);
+                  $.each(resources[i], function(j, r) {
+    			         $("<tr><th class='tg-kr94'>" + j + "</th>" +
+			              "<th class='tg-kr94'>" + r['Type'] + "</th>"   +
+			              "<th class='tg-kr94'>" + JSON.stringify(r['Attributes']) + "</th></tr>")
+			              .appendTo(table); 
+			         });                
+			         n++;
+			      });
+			  }
+			}
+		});
+
+		request.fail(function(jqXHR, textStatus) {
+			alert( "Request failed: " + textStatus );
+		});
+	}
+</script>
+
+<script>	
+	function update() {
+		var request = $.ajax({
+			url: $SCRIPT_ROOT + "/status/data",
+			type: "GET",			
+			dataType: "json",
+			success: function(data) {
+			   var section = $("#resources").empty();
+			   var managers = data["result"]["managers"]
+			   var resources = data["result"]["resources"]
+			   var n = 1;
+			   if (Object.keys(managers).length == 0) {
+			      $("<h3>No IRMs have been registered!</h3>").appendTo(section);
+			   } else {
+			      $.each(managers, function(i, v) {
+			         var hdr = $("<h5>").appendTo(section);
+			         hdr.append(n + ". " + v["Name"] + " (" + v["Address"] + ": " + 
+			                    v["Port"] + " / " + v["ManagerID"] + ")");
+			         var table = $("<table class='tg'>").appendTo(section);
+			         $("<tr><th class='tg-9wi7'>ID</th>" +
+			           "<th class='tg-9wi7'>Type</th>"   +
+			           "<th class='tg-9wi7'>Attributes</th></tr>").appendTo(table);
+                  $.each(resources[i], function(j, r) {
+    			         $("<tr><th class='tg-kr94'>" + j + "</th>" +
+			              "<th class='tg-kr94'>" + r['Type'] + "</th>"   +
+			              "<th class='tg-kr94'>" + JSON.stringify(r['Attributes']) + "</th></tr>")
+			              .appendTo(table); 
+			         });                
+			         n++;
+			      });
+			  }
+			}
+		});
+
+		request.fail(function(jqXHR, textStatus) {
+			alert( "Request failed: " + textStatus );
+		});
+	}
+</script>
+
+
+<script>	
+	function reset() {
+		var request = $.ajax({
+			url: $SCRIPT_ROOT + "/v3/managers",
+			type: "DELETE",			
+			dataType: "json",
+			success: function(data) {
+			   update();
+			  }
+			});
+
+		request.fail(function(jqXHR, textStatus) {
+			alert( "Request failed: " + textStatus );
+		});
+	}
+</script>
+
+<script>	
+	function refresh() {
+		var request = $.ajax({
+			url: $SCRIPT_ROOT + "/v3/resources/request",
+			type: "POST",			
+			dataType: "json",
+			success: function(data) {
+			   update();
+			  }
+			});
+
+		request.fail(function(jqXHR, textStatus) {
+			alert( "Request failed: " + textStatus );
+		});
+	}
+</script>
+
+
+<input type="button" value="Refresh" onClick="refresh()"</button> 
+<input type="button" value="Reboot" onClick="reset()"</button>  
+  
 {% block avail_res %}
-<h2> Available Resources </h2>
-    {% for irm in IRMs %}
-       <h3>{{IRMs[irm]["Name"]}} ({{IRMs[irm]["ManagerID"]}})</h3>
-       <h4>Resources</h4>
-       <ol>
-       </ol>
-    {% else %}
-        <h3>&lt;No IRMs registered&gt;</h3>
-    {% endfor %}    
+<hr>
+<h3>Available Resources</h3>
+<div id="resources"/>
+<hr>
 {% endblock avail_res %}
 
 {% block reservations %}
-<h2> Reservations </h2>
-    {% for reserv in INDEX_RES %}
-       <h3>ID: {{reserv}}</h3>
-       <ol><li type="square">{{RES[reserv].Allocations}}</li></ol>
-    {% else %}
-        <h3>&lt;No reservations&gt;</h3>
-    {% endfor %}    
  
 {% endblock reservations %}
+</body>
+</html>

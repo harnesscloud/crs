@@ -31,7 +31,6 @@ class CRSResourcesView(ResourcesView):
              out = utils.get(crs_managers_view.CRSManagersView.version + '/' + "resources", data["Port"], data["Address"])
              if "result" in out:
                  CRSResourcesView.resources[data["ManagerID"]] = out["result"]
-             print "::::>", CRSResourcesView.resources
           except Exception as e:
              crs_managers_view.CRSManagersView().delete_manager(data["ManagerID"])
              return json_error(e)
