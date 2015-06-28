@@ -1,5 +1,36 @@
+import deps
 import copy
+from hresman import utils
 
+def compute_capacity(managers, mgr_id, resource, request):
+
+   if mgr_id not in managers:
+      raise Exception("cannot find manager: " + mgr_id)
+   
+   addr = managers[mgr_id]['Address']
+   port = managers[mgr_id]['Port']
+   
+   data = {'Resource': resource, "Allocation": [{"Attributes": request["Attributes"]}], "Release": []}
+   ret= utils.post(data, 'v3/resources/capacity', port, addr)
+   if "result" not in ret:
+      raise Exception("cannot calculate capacity!")
+
+   return ret["result"]
+
+def match_constraints(constraints, resID, resource, alloc):
+    match = True
+
+    for constraint in constraints:
+        if ("Source" in constraint) and \
+           ("ConstraintType" in constraint) and ("Group" in alloc):
+          if ("ID" in constraint) and (constraint["Source"] == alloc["Group"]):
+             eval_str = "'" + str(constraint["ID"]) + "' " + constraint["ConstraintType"] + " '" + str(resID) + "'"
+             if not (eval(eval_str)):
+                match = False
+                break  
+        else:
+           raise Exception("malformed constraint: " + str(constraint))         
+    return match      
 
 @staticmethod
 def schedule(managers, resources, alloc_req, constraints):
@@ -10,11 +41,30 @@ def schedule(managers, resources, alloc_req, constraints):
 
    Allocations: [{u'Group': u'g0', u'Type': u'Machine', u'Attributes': {u'Cores': 8, u'Disk': 8192, u'Memory': 1024}}, {u'Group': u'g0', u'Type': u'Machine', u'Attributes': {u'Cores': 8, u'Disk': 8192, u'Memory': 1024}}, {u'Group': u'g0', u'Type': u'DFECluster', u'Attributes': {u'Cores': 8, u'Disk': 8192, u'Memory': 1024}}]
    '''
-   state_res = copy.copy(resources)
-   print ":::>", state_res
+   state_res = copy.deepcopy(resources)
+   result = []
    for rq in alloc_req:
-      for rs in state_res:
-         print ":::>", rs
+      sc = {}
+      for mgr in state_res:
+         resources = state_res[mgr]
+         for res in resources:
+            if resources[res]['Type'] == rq['Type'] and match_constraints(constraints, res, resources, rq):
+               ret = compute_capacity(managers, mgr, resources[res], rq)
+               if ret != {}:
+                  resources[res]["Attributes"] = ret["Resource"]["Attributes"]
+                  sc = {"manager": mgr, "res_id": res, "alloc_req": rq}
+                  break 
+         if sc != {}:
+            break
+      if sc == {}:
+         raise Exception("cannot find a schedule!")
+      result.append(sc)
+   return result
+
+               
+         
+         
+               
       
       
 
