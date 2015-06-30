@@ -11,15 +11,15 @@ def compute_capacity(managers, mgr_id, resource, request):
    port = managers[mgr_id]['Port']
    
    data = {'Resource': resource, "Allocation": [{"Attributes": request["Attributes"]}], "Release": []}
-   ret= utils.post(data, 'v3/resources/capacity', port, addr)
+   ret= utils.post(data, 'v3/resources/calc-capacity', port, addr)
    if "result" not in ret:
       raise Exception("cannot calculate capacity!")
 
    return ret["result"]
 
 def match_constraints(constraints, resID, resource, alloc):
-    match = True
 
+    match = True       
     for constraint in constraints:
         if ("Source" in constraint) and \
            ("ConstraintType" in constraint) and ("Group" in alloc):
