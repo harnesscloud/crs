@@ -35,7 +35,7 @@ def work ():
 #work()  
 
 log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+#log.setLevel(logging.ERROR)
 
 mgr.run(56788)
 
