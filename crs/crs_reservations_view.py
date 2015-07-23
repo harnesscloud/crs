@@ -11,7 +11,7 @@ from hresman.utils import json_request, json_reply, json_error
 from hresman.reservations_view import ReservationsView
 from crs_managers_view import CRSManagersView
 from crs_resources_view import CRSResourcesView
-
+from crs_managers_view import CRSManagersView
 import uuid
 
 class CRSReservationsView(ReservationsView):
@@ -42,7 +42,7 @@ class CRSReservationsView(ReservationsView):
                  } 
           
           try:
-             ret = hresman.utils.post(data, 'v3/reservations', port, addr)
+             ret = hresman.utils.post(data, 'createReservation', port, addr)
           except Exception as e:
              print "rolling back! " + str(e)
              rollback = True
@@ -80,15 +80,15 @@ class CRSReservationsView(ReservationsView):
           ready = True
           addrs = []
           for alloc in data:
-             ret = hresman.utils.post( { "ReservationID" : alloc["iRes"] }, "v3/reservations/check", alloc["port"], alloc["addr"])
+             ret = hresman.utils.post( { "ReservationID" : alloc["iRes"] }, "checkReservation", alloc["port"], alloc["addr"])
              if "result" not in ret:
                 raise Exception("Error in checking reservation: ", str(ret))
              
              instances = ret["result"]["Instances"]
-
+             
              for i in instances:                
                 addrs.extend(instances[i]["Address"])
-                ready = ready and (instances[i]["Ready"] == "True")
+                ready = ready and instances[i]["Ready"].upper() == "TRUE"
           if ready:
              check_result["Instances"][reservation] = { "Ready": "True", "Address": addrs }
           else:
@@ -97,19 +97,27 @@ class CRSReservationsView(ReservationsView):
 
     ###############################################  release reservation ############   
     def _release_reservation(self, reservations):
-    
        for reservation in reservations:
           if reservation not in ReservationsView.reservations: 
              raise Exception("cannot find reservation: " + reservation)
           
           data = ReservationsView.reservations[reservation]
           for alloc in data:
-             ret = hresman.utils.delete_( { "ReservationID" : alloc["iRes"] }, "v3/reservations", alloc["port"], alloc["addr"])
+    
+             ret = hresman.utils.delete_( { "ReservationID" : alloc["iRes"] }, "releaseReservation", alloc["port"], alloc["addr"])
              if "result" not in ret:
                 raise Exception("Error in deleting reservation: ", str(ret))
              
           del ReservationsView.reservations[reservation]       
-       return { }       
+       return { }   
+
+    ###############################################  release all reservations ############        
+    def _release_all_reservations(self):
+       managers = CRSManagersView.managers
+       for m in managers:
+          hresman.utils.delete_({}, "releaseAllReservations", managers[m]['Port'], managers[m]['Address'])
+       reservations = ReservationsView.reservations.keys()
+       return self._release_reservation(reservations)           
                    
                       
 

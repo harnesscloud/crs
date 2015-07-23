@@ -11,7 +11,7 @@ def compute_capacity(managers, mgr_id, resource, request):
    port = managers[mgr_id]['Port']
    
    data = {'Resource': resource, "Allocation": [{"Attributes": request["Attributes"]}], "Release": []}
-   ret= utils.post(data, 'v3/resources/calc-capacity', port, addr)
+   ret= utils.post(data, 'calculateCapacity', port, addr)
    if "result" not in ret:
       raise Exception("cannot calculate capacity!")
 
