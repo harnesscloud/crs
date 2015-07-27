@@ -53,7 +53,8 @@ class CRSReservationsView(ReservationsView):
           if rollback:
              break
           else:
-             iResIDs.append({"addr": addr, "port": port, "iRes": ret["result"]["ReservationID"], "sched": s})
+             iResIDs.append({"addr": addr, "port": port, "name": CRSManagersView.managers[s["manager"]]['Name'], \
+                             "iRes": ret["result"]["ReservationID"], "sched": s})
        
        if not rollback:
           resID = uuid.uuid1()

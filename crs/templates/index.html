@@ -74,18 +74,21 @@ var ihandle=setInterval(function(){
 			  } else {
 			      $.each(reservations, function(i, r) {
 			         var hdr = $("<h5>").appendTo(sect_reservations);
-			         hdr.append(n + ". Reservation #" + i);
+			         hdr.append("ID: " + i);
 				      var table = $("<table class='tg'>").appendTo(sect_reservations);
 			         $("<tr><th class='tg-9wi8'>rID</th>" +
 			           "<th class='tg-9wi8'>Manager</th>" +			       
 			           "<th class='tg-9wi8'>Resource</th>"   +
                     "<th class='tg-9wi8'>Allocation</th>"   +			         
-			           "<th class='tg-9wi8'>Addresses</th></tr>")
+			           "<th class='tg-9wi8'>Address</th></tr>")
 			            .appendTo(table);
                   $.each(reservations[i], function(j, a) {
-    			         $("<tr><th class='tg-kr94'>" + a["iRes"] + 
-                       "</th>" 
-			               + "</tr>")
+    			         $("<tr><th class='tg-kr94'>" + a["iRes"] +
+    			           "<th>" + a["name"] + " (" + a["addr"] + ":" + a["port"] + ")"
+    			           + "<th>" + a["sched"]["res_id"]
+    			           + "<th>" + JSON.stringify(a["sched"]["alloc_req"]["Attributes"])
+    			           + "<th>" + a["addrs"]
+			              + "</tr>")
 			              .appendTo(table); 
 			         }); 
 			         n++;
@@ -108,9 +111,27 @@ var ihandle=setInterval(function(){
 	}
 </script>
 
+<script>	
+	function release_all() {
+		var request = $.ajax({
+			url: $SCRIPT_ROOT + "/v3/reservations/all",
+			type: "DELETE",			
+			dataType: "json",
+			success: function(data) {
+			   update();
+			  }
+			});
+
+		request.fail(function(jqXHR, textStatus) {
+			alert( "Request failed: " + textStatus );
+		});
+	}
+</script>
+
 
 <script>	
 	function reset() {
+	   release_all();
 		var request = $.ajax({
 			url: $SCRIPT_ROOT + "/v3/managers",
 			type: "DELETE",			
@@ -127,7 +148,7 @@ var ihandle=setInterval(function(){
 </script>
 
 <script>	
-	function refresh() {
+	function update_status() {
 		var request = $.ajax({
 			url: $SCRIPT_ROOT + "/v3/resources/request",
 			type: "GET",			
@@ -144,8 +165,9 @@ var ihandle=setInterval(function(){
 </script>
 
 
-<input type="button" value="Refresh" onClick="refresh()"</button> 
-<input type="button" value="Reboot" onClick="reset()"</button>  
+<input type="button" value="Update status" onClick="update_status()"</button> 
+<input type="button" value="Reset" onClick="reset()"</button>  
+<input type="button" value="Release all" onClick="release_all()"</button>  
   
 <hr>
 <h3>Resources</h3>

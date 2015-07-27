@@ -24,8 +24,14 @@ class StatusView(FlaskView):
       try:
          managers = CRSManagersView.managers
          resources = CRSResourcesView.resources
-         reservations = CRSReservationsView.reservations   
-         #print ":::>", reservations      
+         reservations = CRSReservationsView.reservations
+         '''
+         for reservation in reservations:
+            for ires in reservation:
+               if "vaddrs" not in ires:
+                  iRes["vaddrs"] = []   
+         #print ":::>", reservations 
+         '''     
          return json_reply({'managers': managers, 'resources': resources, 'reservations': reservations})
       except Exception as e:
          return json_error(e)    

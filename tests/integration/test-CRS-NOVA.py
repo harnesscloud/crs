@@ -28,9 +28,10 @@ def load_services():
 
    print "loading services..." 
    crs = subprocess.Popen([LOC +"/../../crs/app.py", "-p", "56770"], cwd=LOC +"/../../crs")
-   irm_nova = subprocess.Popen([LOC +"/../../../irm-nova/irm-nova.py", "-m", "-c", LOC+"/irm-vagrant-test.cfg"], cwd=LOC +"/../../../irm-nova")   
    time.sleep(1)
- 
+   irm_nova = subprocess.Popen([LOC +"/../../../irm-nova/irm-nova.py", "-m", "-c", LOC+"/irm-vagrant-test.cfg"], cwd=LOC +"/../../../irm-nova")   
+   time.sleep(3)
+   
 def unload_services():
    global crs, irm_nova
    print "unloading services..."
@@ -41,6 +42,7 @@ def unload_services():
 @pytest.fixture(autouse=True, scope="module")
 def init(request):
    load_services()
+   time
    def end():
       unload_services()
             
@@ -121,7 +123,7 @@ def test4():
                                        "MEM_U_S_BYTE": { "PollTimeMultiplier": 1 }, \
                                        "MEM_TOT_BYTE": { "PollTimeMultiplier": 1 }, \
                                        "CPU_TOT_TIME": { "PollTimeMultiplier": 1 } \
-                                   },"PollTime": 1}}) 
+                                   },"PollTime": 1000}}) 
    assert r.status_code == 200
    rs = r.json()  
    assert "result" in rs
@@ -132,6 +134,7 @@ def test4():
    r = get("/metrics?id="+resID+"&entry=1")
    assert r.status_code == 200
    rs = r.json()
+   print ":::::::::::::::::::::::>", str(rs)
    assert "result" in rs
    assert "Metrics" in rs["result"]
    assert "CPU_U_S_TIME" in rs["result"]["Metrics"]
@@ -141,4 +144,37 @@ def test4():
    assert r.status_code == 200
    rs = r.json()
    assert "result" in rs      
+
+# requests with metrics   
+def test5(): 
+   # create reservation
+   r = post("/reservations", { "Allocation": [ { "Type": "Machine", \
+                               "Attributes": {"Cores": 2, "Memory": 2000  } } ], \
+                               "Monitor": { \
+                                   "Machine": { \
+                                       "CPU_U_S_TIME": { "PollTimeMultiplier": 1 }, \
+                                       "MEM_U_S_BYTE": { "PollTimeMultiplier": 2 } \
+                                   },"PollTime": 1500}}) 
+   assert r.status_code == 200
+   rs = r.json()  
+   assert "result" in rs
+   assert len(rs["result"]["ReservationID"]) == 1
+   resID = rs["result"]["ReservationID"][0]                              
    
+   print "reservation ====>", resID
+   time.sleep(8)
+   r = get("/metrics?id="+resID+"&entry=1")
+   assert r.status_code == 200
+   rs = r.json()
+   print ":::::::::::::::::::::::>", str(rs)
+   assert "result" in rs
+   assert "Metrics" in rs["result"]
+   assert "CPU_U_S_TIME" in rs["result"]["Metrics"]
+   
+   # release reservation
+   r = delete("/reservations", { "ReservationID": [resID] })   
+   assert r.status_code == 200
+   rs = r.json()
+   assert "result" in rs     
+    
+
