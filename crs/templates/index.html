@@ -15,8 +15,9 @@
 
 
 var ihandle=setInterval(function(){
+   update_status();
    update();
-}, 3000);
+}, 2000);
 
 </script>
 <style type="text/css">
@@ -25,7 +26,7 @@ var ihandle=setInterval(function(){
 .tg th{font-family:Arial, sans-serif;font-size:12px;font-weight:normal;padding:2px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
 .tg .tg-9wi7{font-weight:bold;font-size:12px;background-color:#fffc9e;text-align:center}
 .tg .tg-9wi8{font-weight:bold;font-size:12px;background-color:#9efcff;text-align:center}
-.tg .tg-kr94{font-size:12px;text-align:center}
+.tg .tg-kr94{font-size:12px;text-align:left}
 
 </style>
     
@@ -36,9 +37,13 @@ var ihandle=setInterval(function(){
     <h1>CRS Frontend (v3) </h1>
     
 <script>	
+   function pretty_json(obj) {
+      return obj.replace(/{|\"|}/g,"")
+   } 
+
 	function update() {
 		var request = $.ajax({
-			url: $SCRIPT_ROOT + "/status/data",
+			url: $SCRIPT_ROOT + "/data",
 			type: "GET",			
 			dataType: "json",
 			success: function(data) {
@@ -46,6 +51,7 @@ var ihandle=setInterval(function(){
 			   var managers = data["result"]["managers"];
 			   var resources = data["result"]["resources"];
 			   var reservations = data["result"]["reservations"];
+			   var addrs = data["result"]["addrs"];
 			   var n = 1;
 			   if (Object.keys(managers).length == 0) {
 			      $("<h4>No IRMs have been registered!</h4>").appendTo(sect_resources);
@@ -61,7 +67,7 @@ var ihandle=setInterval(function(){
                   $.each(resources[i], function(j, r) {
     			         $("<tr><th class='tg-kr94'>" + j + "</th>" +
 			              "<th class='tg-kr94'>" + r['Type'] + "</th>"   +
-			              "<th class='tg-kr94'>" + JSON.stringify(r['Attributes']) + "</th></tr>")
+			              "<th class='tg-kr94'>" + pretty_json(JSON.stringify(r['Attributes'])) + "</th></tr>")
 			              .appendTo(table); 
 			         });                
 			         n++;
@@ -83,20 +89,32 @@ var ihandle=setInterval(function(){
 			           "<th class='tg-9wi8'>Address</th></tr>")
 			            .appendTo(table);
                   $.each(reservations[i], function(j, a) {
-    			         $("<tr><th class='tg-kr94'>" + a["iRes"] +
-    			           "<th>" + a["name"] + " (" + a["addr"] + ":" + a["port"] + ")"
-    			           + "<th>" + a["sched"]["res_id"]
-    			           + "<th>" + JSON.stringify(a["sched"]["alloc_req"]["Attributes"])
-    			           + "<th>" + a["addrs"]
-			              + "</tr>")
-			              .appendTo(table); 
+                     if (addrs[i].length == reservations[i].length) {
+       			         $("<tr><th class='tg-kr94'>" + a["iRes"] +
+       			           "<th>" + a["name"] + " (" + a["addr"] + ":" + a["port"] + ")"
+       			           + "<th>" + a["sched"]["res_id"]
+       			           + "<th>" + pretty_json(JSON.stringify(a["sched"]["alloc_req"]["Attributes"]))
+       			           + "<th>" + addrs[i][j]
+			                 + "</tr>")
+			                 .appendTo(table); 
+			            } else {
+			                 $("<tr><th class='tg-kr94'>" + a["iRes"] +
+       			           "<th>" + a["name"] + " (" + a["addr"] + ":" + a["port"] + ")"
+       			           + "<th>" + a["sched"]["res_id"]
+       			           + "<th>" + pretty_json(JSON.stringify(a["sched"]["alloc_req"]["Attributes"]))
+       			           + "<th>" + addrs[i]
+			                 + "</tr>")
+			                 .appendTo(table); 	
+			            }		            
 			         }); 
 			         n++;
-			      });  			  
+			      });
+			      /*  			  
 			      var list = $("<ol>").appendTo(sect_reservations);
 			      for (res in reservations) {
 			         $("<li>" + JSON.stringify(reservations[res]) + "</li>").appendTo(list);
-               }			  
+			         $("<li>" + JSON.stringify(addrs[res]) + "</li>").appendTo(list);
+               }	*/		  
 			  }
 
         }

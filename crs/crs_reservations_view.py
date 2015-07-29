@@ -42,6 +42,7 @@ class CRSReservationsView(ReservationsView):
                  } 
           
           try:
+             print ":::>", data, ":", addr, ":", port
              ret = hresman.utils.post(data, 'createReservation', port, addr)
           except Exception as e:
              print "rolling back! " + str(e)
@@ -63,7 +64,7 @@ class CRSReservationsView(ReservationsView):
           for iResID in iResIDs:
              data = {"ReservationID": iResID["iRes"]}
              try:
-                hresman.utils.delete(data, 'v3/reservations', iResID["port"], iResID["addr"])
+                hresman.utils.delete(data, 'releaseReservation', iResID["port"], iResID["addr"])
              except:
                 pass  
           raise Exception("cannot make reservation! (rollbacking)")  
@@ -73,6 +74,7 @@ class CRSReservationsView(ReservationsView):
     ###############################################  check reservation ############   
     def _check_reservation(self, reservations):
        check_result = { "Instances": {} }
+ 
        for reservation in reservations:
           if reservation not in ReservationsView.reservations: 
              raise Exception("cannot find reservation: " + reservation)

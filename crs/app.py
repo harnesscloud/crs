@@ -9,7 +9,7 @@ import hresman.utils
 import logging
 from optparse import OptionParser
 
-from status_view import StatusView
+from crs_status_view import CRSStatusView
 from crs_managers_view import CRSManagersView
 from crs_resources_view import CRSResourcesView
 from crs_reservations_view import CRSReservationsView
@@ -17,7 +17,7 @@ from crs_metrics_view import CRSMetricsView
 import simple_scheduler
           
 crs_views=[CRSManagersView,  \
-           StatusView, \
+           CRSStatusView, \
            CRSMetricsView, \
            CRSResourcesView, \
            CRSReservationsView
