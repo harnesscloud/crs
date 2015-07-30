@@ -121,7 +121,6 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
 	      for ip in range(i+1, reservation_size):
 		rp = reservation[ip]
 		if compound_reservation[i][ip] != None and compound_reservation[i][ip][ca] != None:
-		  print "compound_reservation[i][ip][ca] = " + str(compound_reservation[i][ip][ca])
 		  if rp.type == Rp.type:
 		    acc = acc + int(compound_reservation[i][ip][ca]["Value"])
 		    out = out + str(compound_reservation[i][ip][ca]["Value"]) + " " + rp.key + "_" + Rp.key + " + "
@@ -225,7 +224,7 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
   f.close();
 
 
-def generate_reservations(solution, resources, reservation, compound_resources_table):
+def generate_reservations(solution, resources, reservation, resources_table, compound_resources_table):
   result = [None]*len(reservation)
   
   try:
@@ -235,8 +234,12 @@ def generate_reservations(solution, resources, reservation, compound_resources_t
 	print s + ": " + str(solution[s])
       if s[0] == 'r' and solution[s] > 0 :
 	keys = s.split('_')
-	R = resources[int(keys[1][1:])]
+	
+	R = resources[resources_table[keys[1]]]
+	
 	result[int(keys[0][1:])] = {"manager": R.irm, "res_id": R.key, "alloc_req": reservation[int(keys[0][1:])]}
+	print "result[" + str(int(keys[0][1:])) + "]: " + keys[0] + " = " + str(reservation[int(keys[0][1:])]) 
+	print str(result[int(keys[0][1:])])
 
     # Remove empty espaces in reservation array  
     result = [x for x in result if x != None]
@@ -250,6 +253,7 @@ def generate_reservations(solution, resources, reservation, compound_resources_t
 	
   except Exception, e:
     print "Exception in generate_reservations: %s" % e
+    print str(resources)
     exc_type, exc_value, exc_traceback = sys.exc_info()
     traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
     raise
@@ -275,13 +279,13 @@ def schedule(managers, resources,  alloc_req, constrains):
 	
       # Translate resources to generate the optimization problem
       resources_aux = [ ]
-      inverse_resources = { } # used to find the internal id of a resource (integer) using the id given by the IRM
+      resources_table = { } # used to find the internal id of a resource (integer) using the id given by the IRM
       idx = 0
       for irm in resources:
 	for R in resources[irm]:
-	  if "Source" not in resources[irm][R]["Attributes"]: # The resource is not a compound resource
+	  if not "Source" in resources[irm][R]["Attributes"]: # The resource is not a compound resource
 	    newR = Resource(idx)
-	    inverse_resources[R] = idx
+	    resources_table[R] = idx
 	    newR.irm = irm
 	    newR.key = R
 	    newR.type = resources[irm][R]["Type"]
@@ -296,14 +300,16 @@ def schedule(managers, resources,  alloc_req, constrains):
       compound_resources = [[None]*len(resources_aux) for _ in range(len(resources_aux))]
       compound_resources_table = { }
       for irm in resources:
+	print "irm = " + str(irm)
 	for R in resources[irm]:
+	  
 	  if "Source" in resources[irm][R]["Attributes"]: # The resource is a compound resource
-	    source = inverse_resources[resources[irm][R]["Attributes"]["Source"]] 
-	    target = inverse_resources[resources[irm][R]["Attributes"]["Target"]] 
+	    source = resources_table[resources[irm][R]["Attributes"]["Source"]] 
+	    target = resources_table[resources[irm][R]["Attributes"]["Target"]] 
 	    if target < source:
 	      aux = source
 	      source = target
-	      target = source
+	      target = aux
 	    compound_resources[source][target] = Resource(idx)
 	    compound_resources[source][target].key = R
 	    compound_resources[source][target].irm = irm
@@ -418,7 +424,7 @@ def schedule(managers, resources,  alloc_req, constrains):
 	print "Solution not found" # (or whatever else to indicate it)
       else:
 	# Generates result
-	result = generate_reservations(solution, resources_aux, reservation, compound_resources_table)
+	result = generate_reservations(solution, resources_aux, reservation, resources_table, compound_resources_table)
 	print "result = " + str(result)
       return result
    except Exception, e:
