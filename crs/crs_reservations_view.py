@@ -100,18 +100,20 @@ class CRSReservationsView(ReservationsView):
 
     ###############################################  release reservation ############   
     def _release_reservation(self, reservations):
+       print "releasing..." + str(reservations)
        for reservation in reservations:
           if reservation not in ReservationsView.reservations: 
              raise Exception("cannot find reservation: " + reservation)
           
           data = ReservationsView.reservations[reservation]
+          del ReservationsView.reservations[reservation] 
           for alloc in data:
     
              ret = hresman.utils.delete_( { "ReservationID" : alloc["iRes"] }, "releaseReservation", alloc["port"], alloc["addr"])
-             if "result" not in ret:
-                raise Exception("Error in deleting reservation: ", str(ret))
-             
-          del ReservationsView.reservations[reservation]       
+             #if "result" not in ret:
+             #   raise Exception("Error in deleting reservation: ", str(ret))
+  
+                
        return { }   
 
     ###############################################  release all reservations ############        
