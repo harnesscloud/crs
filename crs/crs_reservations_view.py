@@ -18,6 +18,7 @@ class CRSReservationsView(ReservationsView):
     _scheduler=None
     ###############################################  create reservation ############ 
     def _create_reservation(self, alloc_req, constraints, monitor):
+       print "HELLO!"
        schedule = CRSReservationsView._scheduler(CRSManagersView.managers, CRSResourcesView.resources, alloc_req, constraints) 
        
        iResIDs = []
