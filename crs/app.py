@@ -14,13 +14,15 @@ from crs_managers_view import CRSManagersView
 from crs_resources_view import CRSResourcesView
 from crs_reservations_view import CRSReservationsView
 from crs_metrics_view import CRSMetricsView
+from crs_cost_view import CRSCostView
 import simple_scheduler
           
 crs_views=[CRSManagersView,  \
            CRSStatusView, \
            CRSMetricsView, \
            CRSResourcesView, \
-           CRSReservationsView
+           CRSReservationsView,
+           CRSCostView
           ]
           
 CRSReservationsView._scheduler=simple_scheduler.schedule
@@ -28,7 +30,7 @@ CRSReservationsView._scheduler=simple_scheduler.schedule
 mgr = HarnessResourceManager(crs_views)
 
 parser = OptionParser()
-parser.add_option("-p", "--port", dest="PORT", default=56789,
+parser.add_option("-p", "--port", dest="PORT", default=56788,
                   help="CRS port", type="int")
 
 (options,_) = parser.parse_args()
@@ -44,7 +46,7 @@ def work ():
 #work()  
 
 log = logging.getLogger('werkzeug')
-#log.setLevel(logging.ERROR)
+log.setLevel(logging.ERROR)
 
 mgr.run(options.PORT)
 
