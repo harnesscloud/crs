@@ -33,7 +33,7 @@ def match_constraints(constraints, resID, resource, alloc):
     return match      
 
 @staticmethod
-def schedule(managers, resources, alloc_req, constraints):
+def schedule(managers, resources, alloc_req, alloc_constraints, res_constraints):
    '''   
    Managers: {'1d1c5582-1b74-11e5-bba3-60a44cabf185': {'Name': u'IRM-SEAL\n', 'ManagerID': '1d1c5582-1b74-11e5-bba3-60a44cabf185', 'Port': 54106, 'Address': '127.0.0.1'}, '1e2e967e-1b74-11e5-bba3-60a44cabf185': {'Name': u'IRM-HERON\n', 'ManagerID': '1e2e967e-1b74-11e5-bba3-60a44cabf185', 'Port': 51186, 'Address': '127.0.0.1'}}
 
@@ -48,7 +48,7 @@ def schedule(managers, resources, alloc_req, constraints):
       for mgr in state_res:
          resources = state_res[mgr]
          for res in resources:
-            if resources[res]['Type'] == rq['Type'] and match_constraints(constraints, res, resources, rq):
+            if resources[res]['Type'] == rq['Type'] and match_constraints(alloc_constraints, res, resources, rq):
                ret = compute_capacity(managers, mgr, resources[res], rq)
                if ret != {}:
                   resources[res]["Attributes"] = ret["Resource"]["Attributes"]

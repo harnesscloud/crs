@@ -281,7 +281,7 @@ def decode_resource_names(result, enc_dict):
              r['res_id'] = enc_dict[r['manager']][r['res_id']]
                 
 @staticmethod
-def schedule(managers, resources,  alloc_req, constrains):
+def schedule(managers, resources,  alloc_req, constrains, res_constrains):
    try:  
    
       group_counter = 1000
@@ -296,7 +296,6 @@ def schedule(managers, resources,  alloc_req, constrains):
       # constrains: distance constrains
       #print "constrains: " + `constrains`
       
-      res_constrains  = [ ]
       reservation = alloc_req 
       
       resources,enc_dict = encode_resource_names(resources)
@@ -358,7 +357,9 @@ def schedule(managers, resources,  alloc_req, constrains):
 	  split_cons = constraint.split("<=")
 	  newC.threshold = split_cons[1]
 	  newC.addends = map(lambda x: x.strip(), split_cons[0].split("+"))
-	  res_constrains_aux.append(newC)
+	  
+	  # Gabriel (4/08/2015): Please check if this is correct:      
+	  res_constrains_aux[attribute].append(newC)
 	  idx = idx + 1
 
       # Translate allocation request to generate the optimization problem

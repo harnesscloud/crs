@@ -29,15 +29,14 @@ class CRSReservationsView(ReservationsView):
           raise Exception("invalid scheduler: %s" % scheduler)
 
     ###############################################  create reservation ############ 
-    def _create_reservation(self, scheduler, alloc_req, constraints, monitor):
+    def _create_reservation(self, scheduler, alloc_req, alloc_constraints, monitor):
         
        if scheduler != "":
           CRSReservationsView._select_scheduler(scheduler)
     
-       schedule = CRSReservationsView._scheduler(CRSManagersView.managers, CRSResourcesView.resources, alloc_req, constraints) 
-       
-       print "scheduler....", str(schedule)
-       
+       schedule = CRSReservationsView._scheduler(CRSManagersView.managers, CRSResourcesView.resources, \
+                                                 alloc_req, alloc_constraints, CRSResourcesView.resource_constraints) 
+        
        iResIDs = []
        rollback = False
        for s in schedule:          
