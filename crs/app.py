@@ -15,7 +15,6 @@ from crs_resources_view import CRSResourcesView
 from crs_reservations_view import CRSReservationsView
 from crs_metrics_view import CRSMetricsView
 from crs_cost_view import CRSCostView
-import simple_scheduler
           
 crs_views=[CRSManagersView,  \
            CRSStatusView, \
@@ -47,14 +46,8 @@ def work ():
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-if options.scheduler == "simple":
-   import simple_scheduler
-   CRSReservationsView._scheduler=simple_scheduler.schedule
-elif options.scheduler == "NC":
-   import schedulerNC
-   CRSReservationsView._scheduler=schedulerNC.schedule
-else:
-    raise Exception("invalid scheduler: %s" % options.scheduler)
+
+CRSReservationsView._select_scheduler(options.scheduler)
 
 print "Using scheduler: %s" % options.scheduler
 mgr.run(options.PORT)

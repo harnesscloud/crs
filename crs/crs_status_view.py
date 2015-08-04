@@ -35,7 +35,11 @@ class CRSStatusView(FlaskView):
          
          for r in reservations:
             if r not in CRSStatusView.addrs:
-                  ads=CRSReservationsView()._check_reservation([r])
+                  
+                  try:
+                     ads=CRSReservationsView()._check_reservation([r])
+                  except:
+                     ads = {"Instances": { r : { "Ready": "True", "Address": ["error"] } } } 
                   if "Instances" in ads:
                      # check that all instances are ready
                      ready = True

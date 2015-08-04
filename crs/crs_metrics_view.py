@@ -19,9 +19,7 @@ class CRSMetricsView(MetricsView):
            raise Exception("cannot find reservation: " + reservID)
            
         resData = reservations[reservID]
-        
-        print resData
-        
+         
         for rd in resData:        
            r=post({ "ReservationID": rd['iRes'] }, "checkReservation", rd['port'], rd['addr'])
            if "result" not in r:

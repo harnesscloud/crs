@@ -7,7 +7,6 @@ from glpk import *
 from glpk.glpk_parser import *
 from glpk.glpkpi import *
 
-
 '''   
 Managers: {'1d1c5582-1b74-11e5-bba3-60a44cabf185': {'Name': u'IRM-SEAL\n', 'ManagerID': '1d1c5582-1b74-11e5-bba3-60a44cabf185', 'Port': 54106, 'Address': '127.0.0.1'}, '1e2e967e-1b74-11e5-bba3-60a44cabf185': {'Name': u'IRM-HERON\n', 'ManagerID': '1e2e967e-1b74-11e5-bba3-60a44cabf185', 'Port': 51186, 'Address': '127.0.0.1'}}
 
@@ -34,6 +33,8 @@ class Constraint:
         self.addends = [ ]
         self.threshold = None
 
+
+   
 def generate_lp(filename, resources, compound_resources, constraints, reservation, compound_reservation, distances, compound_attributes, distance_attributes) :
   
   reservation_size = len(reservation)
@@ -142,6 +143,7 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
 		  addends = addends + ca + "_" + R.key + Rp.key + r.key + Rp.key + " + "
 		  attr_bounds = attr_bounds + "\t0 <= " + ca + "_" + R.key + Rp.key + r.key + Rp.key + " <= " + `accp` + "\n"
 	    if len(addends) > 0:
+	      print "::::>", str(compound_resources)
 	      f.write("\t" + compound_resources[j][jp].key + "_" + ca + ": " + addends)
 	      f.seek(-3, 2)
 	      f.write(" - " + str(compound_resources[j][jp].key) + "_" + ca + " = 0\n")
@@ -255,11 +257,34 @@ def generate_reservations(solution, resources, reservation, resources_table, com
     traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
     raise
   return result
+ 
+def encode_resource_names(resources):
+   _resources = copy.deepcopy(resources)
+   _encdict = { }
+   for m in _resources:
+      res = _resources[m]
+      for r in res:
+         key = r.replace("-", "")
+         if (key != r):
+            if m not in _encdict:
+                _encdict[m] = {}
+            _encdict[m][key] = r
+            res[key] = res[r]
+            del res[r]
+   return _resources, _encdict
+   
+def decode_resource_names(result, enc_dict):  
   
-
+   for r in result:
+      if r['manager'] in enc_dict:
+         if r['res_id'] in enc_dict[r['manager']]:
+             r['res_id'] = enc_dict[r['manager']][r['res_id']]
+                
 @staticmethod
 def schedule(managers, resources,  alloc_req, constrains):
    try:  
+   
+      group_counter = 1000
 
       # managers: list of managers (not used)
       #print "managers: " + `managers`
@@ -273,6 +298,9 @@ def schedule(managers, resources,  alloc_req, constrains):
       
       res_constrains  = [ ]
       reservation = alloc_req 
+      
+      resources,enc_dict = encode_resource_names(resources)
+      
 	
       # Translate resources to generate the optimization problem
       resources_aux = [ ]
@@ -298,8 +326,8 @@ def schedule(managers, resources,  alloc_req, constrains):
       compound_resources_table = { }
       for irm in resources:
 	for R in resources[irm]:
-	  
 	  if "Source" in resources[irm][R]["Attributes"]: # The resource is a compound resource
+	    
 	    source = resources_table[resources[irm][R]["Attributes"]["Source"]] 
 	    target = resources_table[resources[irm][R]["Attributes"]["Target"]] 
 	    if target < source:
@@ -343,6 +371,10 @@ def schedule(managers, resources,  alloc_req, constrains):
 	  newr = Resource(idx)
 	  newr.id = idx
 	  newr.key = "r" + `idx`
+	  if "Group" not in r:
+	     r["Group"] = "GRP" + str(group_counter)
+	     group_counter = group_counter + 1
+	      
 	  newr.group = r["Group"]
 	  if newr.group not in groups:
 	    groups[newr.group] =  [ ]
@@ -421,6 +453,7 @@ def schedule(managers, resources,  alloc_req, constrains):
       else:
 	# Generates result
 	result = generate_reservations(solution, resources_aux, reservation, resources_table, compound_resources_table)
+	decode_resource_names(result, enc_dict)
 	print "result = " + str(result)
       return result
    except Exception, e:

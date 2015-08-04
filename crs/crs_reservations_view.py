@@ -16,10 +16,27 @@ import uuid
 
 class CRSReservationsView(ReservationsView):
     _scheduler=None
+    
+    @staticmethod
+    def _select_scheduler(scheduler):
+       if scheduler == "simple":
+          import simple_scheduler
+          CRSReservationsView._scheduler=simple_scheduler.schedule
+       elif scheduler == "NC":
+          import schedulerNC
+          CRSReservationsView._scheduler=schedulerNC.schedule
+       else:
+          raise Exception("invalid scheduler: %s" % scheduler)
+
     ###############################################  create reservation ############ 
-    def _create_reservation(self, alloc_req, constraints, monitor):
-       print "HELLO!"
+    def _create_reservation(self, scheduler, alloc_req, constraints, monitor):
+        
+       if scheduler != "":
+          CRSReservationsView._select_scheduler(scheduler)
+    
        schedule = CRSReservationsView._scheduler(CRSManagersView.managers, CRSResourcesView.resources, alloc_req, constraints) 
+       
+       print "scheduler....", str(schedule)
        
        iResIDs = []
        rollback = False
@@ -43,8 +60,8 @@ class CRSReservationsView(ReservationsView):
                  } 
           
           try:
-             print ":::>", data, ":", addr, ":", port
              ret = hresman.utils.post(data, 'createReservation', port, addr)
+
           except Exception as e:
              print "rolling back! " + str(e)
              rollback = True
@@ -69,7 +86,7 @@ class CRSReservationsView(ReservationsView):
              except:
                 pass  
           raise Exception("cannot make reservation! (rollbacking)")  
-             
+         
        return { "ReservationID" : [str(resID)] }                    
     
     ###############################################  check reservation ############   
