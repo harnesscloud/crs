@@ -180,7 +180,7 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
 		Rp = resources[jp]
 		for ip in range(i+1, reservation_size):
 		  rp = reservation[ip]	  
-		  if rp.type == Rp.type:
+		  if rp.type == Rp.type and distances[i][ip] != None and distances[i][ip][da] != None:
 		    if (j < jp and float(compound_resources[j][jp].attributes[da]) > float(distances[i][ip][da])) or (jp < j and float(compound_resources[jp][j].attributes[da]) > float(distances[i][ip][da])):
 		      ND.append(rp.key + "_" + Rp.key)
 	    if len(ND) > 0:
@@ -191,6 +191,9 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
 	      f.write(" <= "+str(len(ND)) +"\n")
   except Exception as e:
     print "Exception in distance constraints: %s" % e
+    print "compound resources = " + str(compound_resources)
+    print "distances = " + str(distances)
+    
     exc_type, exc_value, exc_traceback = sys.exc_info()
     traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
     raise
@@ -230,18 +233,12 @@ def generate_reservations(solution, resources, reservation, resources_table, com
   try:
     # Generate reservations of single resources
     for s in solution:
-      if solution[s] > 0: 
-	print s + ": " + str(solution[s])
       if s[0] == 'r' and solution[s] > 0 :
 	keys = s.split('_')
-	
 	R = resources[resources_table[keys[1]]]
-	
 	result[int(keys[0][1:])] = {"manager": R.irm, "res_id": R.key, "alloc_req": reservation[int(keys[0][1:])]}
-	print "result[" + str(int(keys[0][1:])) + "]: " + keys[0] + " = " + str(reservation[int(keys[0][1:])]) 
-	print str(result[int(keys[0][1:])])
 
-    # Remove empty espaces in reservation array  
+    # Remove None elements in reservation array  
     result = [x for x in result if x != None]
     
     # Generate reservations of compound resources
@@ -300,7 +297,6 @@ def schedule(managers, resources,  alloc_req, constrains):
       compound_resources = [[None]*len(resources_aux) for _ in range(len(resources_aux))]
       compound_resources_table = { }
       for irm in resources:
-	print "irm = " + str(irm)
 	for R in resources[irm]:
 	  
 	  if "Source" in resources[irm][R]["Attributes"]: # The resource is a compound resource
