@@ -80,8 +80,8 @@ class CRSReservationsView(ReservationsView):
        else:
           for iResID in iResIDs:
              data = {"ReservationID": iResID["iRes"]}
-             try:
-                hresman.utils.delete(data, 'releaseReservation', iResID["port"], iResID["addr"])
+             try:                
+                hresman.utils.delete_(data, 'releaseReservation', iResID["port"], iResID["addr"])
              except:
                 pass  
           raise Exception("cannot make reservation! (rollbacking)")  
