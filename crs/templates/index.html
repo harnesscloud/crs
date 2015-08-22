@@ -11,18 +11,10 @@
 <script src="{{url_for('static', filename='jquery-1.11.0.min.js')}}"></script>
 
 <input type="hidden" id="refreshed" value="no">
-<script type="text/javascript">
 
-
-var ihandle=setInterval(function(){
-   update_status();
-   update();
-}, 2000);
-
-</script>
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;}
-.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;white-space:pre}
 .tg th{font-family:Arial, sans-serif;font-size:12px;font-weight:normal;padding:2px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
 .tg .tg-9wi7{font-weight:bold;font-size:12px;background-color:#fffc9e;text-align:center}
 .tg .tg-9wi8{font-weight:bold;font-size:12px;background-color:#9efcff;text-align:center}
@@ -38,7 +30,7 @@ var ihandle=setInterval(function(){
     
 <script>	
    function pretty_json(obj) {
-      return obj.replace(/{|\"|}/g,"")
+      return obj.replace(/{|\"|}|\\/g,"").replace(/,/g,",<br>");
    } 
 
 	function update() {
@@ -89,23 +81,29 @@ var ihandle=setInterval(function(){
 			           "<th class='tg-9wi8'>Address</th></tr>")
 			            .appendTo(table);
                   $.each(reservations[i], function(j, a) {
-                     if (addrs[i].length == reservations[i].length) {
+                        sh = a["sched"];
+                        
+                        // types and attributes
+                        ress = []; 
+                        allocs = []
+                        for (var s in sh) {
+                           ress.push(sh[s]["ID"]);
+                           
+                           allocs.push(sh[s]["Type"] + ":" + JSON.stringify(sh[s]["Attributes"])); 
+                           
+                        }
+                        
+                        // attributes
+                        
+                           
        			         $("<tr><th class='tg-kr94'>" + a["iRes"] +
        			           "<th>" + a["name"] + " (" + a["addr"] + ":" + a["port"] + ")"
-       			           + "<th>" + a["sched"]["res_id"]
-       			           + "<th>" + pretty_json(JSON.stringify(a["sched"]["alloc_req"]["Attributes"]))
-       			           + "<th>" + addrs[i][j]
+       			           + "<th>" + pretty_json(JSON.stringify(ress))
+       			           + "<th>" + pretty_json(JSON.stringify(allocs))
+       			           + "<th>" + pretty_json(JSON.stringify(addrs[i]))
 			                 + "</tr>")
 			                 .appendTo(table); 
-			            } else {
-			                 $("<tr><th class='tg-kr94'>" + a["iRes"] +
-       			           "<th>" + a["name"] + " (" + a["addr"] + ":" + a["port"] + ")"
-       			           + "<th>" + a["sched"]["res_id"]
-       			           + "<th>" + pretty_json(JSON.stringify(a["sched"]["alloc_req"]["Attributes"]))
-       			           + "<th>" + addrs[i]
-			                 + "</tr>")
-			                 .appendTo(table); 	
-			            }		            
+		            
 			         }); 
 			         n++;
 			      });
@@ -166,7 +164,7 @@ var ihandle=setInterval(function(){
 </script>
 
 <script>	
-	function update_status() {
+	function request_resources() {
 		var request = $.ajax({
 			url: $SCRIPT_ROOT + "/v3/resources/request",
 			type: "GET",			
@@ -182,8 +180,16 @@ var ihandle=setInterval(function(){
 	}
 </script>
 
+<script type="text/javascript">
 
-<input type="button" value="Update status" onClick="update_status()"</button> 
+
+var ihandle=setInterval(function(){
+   update();
+}, 2000);
+
+</script>
+
+<input type="button" value="Request Resources" onClick="request_resources()"</button> 
 <input type="button" value="Reset" onClick="reset()"</button>  
 <input type="button" value="Release all" onClick="release_all()"</button>  
   

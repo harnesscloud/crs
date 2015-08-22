@@ -11,8 +11,9 @@ from hresman.utils import json_request, json_reply, json_error
 from hresman.reservations_view import ReservationsView
 from crs_managers_view import CRSManagersView
 from crs_resources_view import CRSResourcesView
-from crs_managers_view import CRSManagersView
 import uuid
+import json
+import copy
 
 class CRSReservationsView(ReservationsView):
     _scheduler=None
@@ -28,39 +29,106 @@ class CRSReservationsView(ReservationsView):
        else:
           raise Exception("invalid scheduler: %s" % scheduler)
 
+    
+    ################################################################################
+    '''
+    [
+    {
+        "manager": "b542620e-3e7c-11e5-8686-60a44cabf185",
+        "alloc_req": {
+            "Group": "G1",
+            "Type": "Machine",
+            "Attributes": {
+                "Cores": 1,
+                "Subnet": "Gabriel",
+                "Memory": 1024
+            }
+        },
+        "res_id": "vagrant-ubuntu-trusty-64"
+    },
+    {
+        "manager": "b542620e-3e7c-11e5-8686-60a44cabf185",
+        "alloc_req": {
+            "Group": "G2",
+            "Type": "Machine",
+            "Attributes": {
+                "Cores": 1,
+                "Subnet": "Gabriel",
+                "Memory": 1024
+            }
+        },
+        "res_id": "vagrant-ubuntu-trusty-64"
+    },
+    {
+        "manager": "b542620e-3e7c-11e5-8686-60a44cabf185",
+        "alloc_req": {
+            "Attributes": {
+                "AddressRange": "192.162.0.0/24",
+                "Name": "Gabriel"
+            },
+            "Type": "Subnet"
+        },
+        "res_id": "ID-S0"
+    },
+    {
+        "manager": "b542620e-3e7c-11e5-8686-60a44cabf185",
+        "alloc_req": {
+            "Attributes": {
+                "IP": "10.1.0.107",
+                "VM": "G2"
+            },
+            "Type": "PublicIP"
+        },
+        "res_id": "ID-P0"
+    }
+]
+    ''' 
+    def group_requests(self, sched):
+       result = {}
+       csched = copy.deepcopy(sched)
+       for req in csched:
+          alloc = req["alloc_req"]
+          alloc['ID'] = req['res_id']
+       
+          if req["manager"] not in result:
+             result[req["manager"]] = []
+          data = result[req["manager"]]   
+          data.append(alloc)
+       return result 
+    
     ###############################################  create reservation ############ 
     def _create_reservation(self, scheduler, alloc_req, alloc_constraints, monitor):
         
        if scheduler != "":
           CRSReservationsView._select_scheduler(scheduler)
-    
-       schedule = CRSReservationsView._scheduler(CRSManagersView.managers, CRSResourcesView.resources, \
-                                                 alloc_req, alloc_constraints, CRSResourcesView.resource_constraints) 
-        
+       
+   
+       schedule = self.group_requests(CRSReservationsView._scheduler(CRSManagersView.managers,\
+                                      CRSResourcesView.resources, \
+                                      alloc_req, alloc_constraints, CRSResourcesView.resource_constraints))
+                                                 
+       
+                                                 
        iResIDs = []
        rollback = False
        for s in schedule:          
-          addr = CRSManagersView.managers[s["manager"]]['Address']
-          port = CRSManagersView.managers[s["manager"]]['Port']
-          rtype = s["alloc_req"]["Type"]
+          addr = CRSManagersView.managers[s]['Address']
+          port = CRSManagersView.managers[s]['Port']
+          types = set(map(lambda x: x['Type'], schedule[s]))
+   
           monitor_data = {}
-          if rtype in monitor:
-             monitor_data[rtype] = monitor[rtype]
-             if "PollTime" in monitor:
-                monitor_data["PollTime"] = monitor["PollTime"]
-          else:
-             monitor_data = {}
+          for m in monitor:
+             if m in types:
+                monitor_data[m] = monitor[m]
                 
-          data = { "Allocation" : [{ "Type": rtype, \
-                                    "ID": s["res_id"], \
-                                    "Attributes": s["alloc_req"]["Attributes"] }], \
-                   
-                   "Monitor": monitor_data
-                 } 
-          
+          if "PollTime" in monitor:
+             monitor_data["PollTime"] = monitor["PollTime"]
+                
+          data = { "Allocation" : schedule[s], "Monitor": monitor_data }
+          print "DATA REQUEST:", data
           try:
              ret = hresman.utils.post(data, 'createReservation', port, addr)
-
+             print "RETURN: ", ret
           except Exception as e:
              print "rolling back! " + str(e)
              rollback = True
@@ -71,12 +139,13 @@ class CRSReservationsView(ReservationsView):
           if rollback:
              break
           else:
-             iResIDs.append({"addr": addr, "port": port, "name": CRSManagersView.managers[s["manager"]]['Name'], \
-                             "iRes": ret["result"]["ReservationID"], "sched": s})
+             iResIDs.append({"addr": addr, "port": port, "name": CRSManagersView.managers[s]['Name'], \
+                             "iRes": ret["result"]["ReservationID"], "sched": schedule[s]})
        
        if not rollback:
           resID = uuid.uuid1()
           ReservationsView.reservations[str(resID)] = iResIDs
+          print "Reservations: ", ReservationsView.reservations[str(resID)]
        else:
           for iResID in iResIDs:
              data = {"ReservationID": iResID["iRes"]}
@@ -138,8 +207,8 @@ class CRSReservationsView(ReservationsView):
        managers = CRSManagersView.managers
        for m in managers:
           hresman.utils.delete_({}, "releaseAllReservations", managers[m]['Port'], managers[m]['Address'])
-       reservations = ReservationsView.reservations.keys()
-       return self._release_reservation(reservations)           
+       ReservationsView.reservations = {}
+       return {}           
                    
                       
 

@@ -3,6 +3,7 @@ import copy
 from hresman import utils
 
 def compute_capacity(managers, mgr_id, resource, request):
+   return {"Resource": resource}
 
    if mgr_id not in managers:
       raise Exception("cannot find manager: " + mgr_id)
@@ -14,7 +15,7 @@ def compute_capacity(managers, mgr_id, resource, request):
    ret= utils.post(data, 'calculateCapacity', port, addr)
    if "result" not in ret:
       raise Exception("cannot calculate capacity!")
-
+   
    return ret["result"]
 
 def match_constraints(constraints, resID, resource, alloc):
@@ -41,6 +42,7 @@ def schedule(managers, resources, alloc_req, alloc_constraints, res_constraints)
 
    Allocations: [{u'Group': u'g0', u'Type': u'Machine', u'Attributes': {u'Cores': 8, u'Disk': 8192, u'Memory': 1024}}, {u'Group': u'g0', u'Type': u'Machine', u'Attributes': {u'Cores': 8, u'Disk': 8192, u'Memory': 1024}}, {u'Group': u'g0', u'Type': u'DFECluster', u'Attributes': {u'Cores': 8, u'Disk': 8192, u'Memory': 1024}}]
    '''
+   
    state_res = copy.deepcopy(resources)
    result = []
    for rq in alloc_req:

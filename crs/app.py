@@ -34,15 +34,15 @@ parser.add_option("-s", "--scheduler", dest="scheduler", default="simple",
 
 (options,_) = parser.parse_args()
                   
-def work (): 
+def request_resources (): 
   global options
-  threading.Timer(10, work).start (); 
+  threading.Timer(3, request_resources).start (); 
   try:
-     hresman.utils.post({}, 'v3/resources/request', options.PORT)
+     hresman.utils.get('v3/resources/request', options.PORT)
   except:
      pass
           
-#work()  
+request_resources() 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
