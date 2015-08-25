@@ -3,8 +3,6 @@ import copy
 from hresman import utils
 
 def compute_capacity(managers, mgr_id, resource, request):
-   return {"Resource": resource}
-
    if mgr_id not in managers:
       raise Exception("cannot find manager: " + mgr_id)
    

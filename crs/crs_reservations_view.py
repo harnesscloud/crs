@@ -84,6 +84,7 @@ class CRSReservationsView(ReservationsView):
 ]
     ''' 
     def group_requests(self, sched):
+       print json.dumps(sched, indent=4)
        result = {}
        csched = copy.deepcopy(sched)
        for req in csched:
@@ -102,13 +103,13 @@ class CRSReservationsView(ReservationsView):
        if scheduler != "":
           CRSReservationsView._select_scheduler(scheduler)
        
-   
+       
        schedule = self.group_requests(CRSReservationsView._scheduler(CRSManagersView.managers,\
                                       CRSResourcesView.resources, \
                                       alloc_req, alloc_constraints, CRSResourcesView.resource_constraints))
                                                  
        
-                                                 
+       print "I AM HERE!"                                          
        iResIDs = []
        rollback = False
        for s in schedule:          
@@ -125,10 +126,10 @@ class CRSReservationsView(ReservationsView):
              monitor_data["PollTime"] = monitor["PollTime"]
                 
           data = { "Allocation" : schedule[s], "Monitor": monitor_data }
-          print "DATA REQUEST:", data
+
           try:
              ret = hresman.utils.post(data, 'createReservation', port, addr)
-             print "RETURN: ", ret
+
           except Exception as e:
              print "rolling back! " + str(e)
              rollback = True
@@ -145,7 +146,6 @@ class CRSReservationsView(ReservationsView):
        if not rollback:
           resID = uuid.uuid1()
           ReservationsView.reservations[str(resID)] = iResIDs
-          print "Reservations: ", ReservationsView.reservations[str(resID)]
        else:
           for iResID in iResIDs:
              data = {"ReservationID": iResID["iRes"]}

@@ -32,9 +32,7 @@ class Constraint:
         self.opoeration = None
         self.addends = [ ]
         self.threshold = None
-
-
-   
+  
 def generate_lp(filename, resources, compound_resources, constraints, reservation, compound_reservation, distances, compound_attributes, distance_attributes) :
   
   reservation_size = len(reservation)
@@ -143,7 +141,6 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
 		  addends = addends + ca + "_" + R.key + Rp.key + r.key + Rp.key + " + "
 		  attr_bounds = attr_bounds + "\t0 <= " + ca + "_" + R.key + Rp.key + r.key + Rp.key + " <= " + `accp` + "\n"
 	    if len(addends) > 0:
-	      print "::::>", str(compound_resources)
 	      f.write("\t" + compound_resources[j][jp].key + "_" + ca + ": " + addends)
 	      f.seek(-3, 2)
 	      f.write(" - " + str(compound_resources[j][jp].key) + "_" + ca + " = 0\n")
@@ -248,7 +245,7 @@ def generate_reservations(solution, resources, reservation, resources_table, com
       if s[0] == 'l' and solution[s] > 0 :
 	keys = s.split('_')
 	R = compound_resources_table[keys[0]]
-	result.append({"manager": R.irm, "res_id": R.key, "alloc_req": {'Type': 'Network Link', 'Attributes': {keys[1]: solution[s]}}})
+	result.append({"manager": R.irm, "res_id": R.key, "alloc_req": {'Type': 'Link', 'Attributes': {keys[1]: solution[s]}}})
 	
   except Exception, e:
     print "Exception in generate_reservations: %s" % e
@@ -289,12 +286,13 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
       # managers: list of managers (not used)
       #print "managers: " + `managers`
       # resources: list of resources of each Manager
-      #print "resources: " + `resources`
+      print "resources: " + `resources`
       # res_constrains: constrains relating several resources
       # alloc_req: an allocation request
-      #print "alloc_req: " + `alloc_req`
+      print "alloc_req: " + `alloc_req`
       # constrains: distance constrains
-      #print "constrains: " + `constrains`
+      print "constraints: " + `constrains`
+      print "res_constrains: " + `res_constrains`
       
       reservation = alloc_req 
       
@@ -326,7 +324,6 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
       for irm in resources:
 	for R in resources[irm]:
 	  if "Source" in resources[irm][R]["Attributes"]: # The resource is a compound resource
-	    
 	    source = resources_table[resources[irm][R]["Attributes"]["Source"]] 
 	    target = resources_table[resources[irm][R]["Attributes"]["Target"]] 
 	    if target < source:
