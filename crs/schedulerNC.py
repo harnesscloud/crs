@@ -29,7 +29,7 @@ class Constraint:
     def __init__(self, idx):
         self.id = idx
         self.key = None
-        self.opoeration = None
+        self.operation = None
         self.addends = [ ]
         self.threshold = None
   
@@ -50,6 +50,7 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
     out = ""
     for R in resources:
       for r in reservation:
+	
 	if r.type == R.type:
 	  out = out + str(weight[int(R.id)]) + " " + r.key + "_" + R.key + " + "
     f.write(out)
@@ -150,13 +151,14 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
 	for c in constraints:
 	  out = ""
 	  written = False
+
 	  for a in c.addends:
 	    if a in links:
 	      written = True
-	      out = out + `a` + " + "
+	      out = out + str(a) + " + "
 	  if written:
 	    out = out[:-3] # remove last " + "
-	    out = "\t" + c.key + "_" + c.attribute + ": " + out + " " + c.operation + " " + `c.threshold` + "\n";
+	    out = "\t" + c.key + "_" + c.attribute + ": " + out + " " + c.operation + " " + str(c.threshold) + "\n";
 	  f.write(out)
 
   except Exception, e:
@@ -339,7 +341,7 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
 	      compound_resources[source][target].attributes[a] = resources[irm][R]["Attributes"][a]
       
       # Translate resource constrains to generate the optimization problem
-      res_constrains_aux = { }
+      res_constrains_aux = [ ]
       idx = 0
       for irm in res_constrains:
 	for c in res_constrains[irm]:
@@ -347,16 +349,18 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
 	  attribute = res_constrains[irm][c]["Attribute"]
 	  #operation = res_constrains[irm][c]["Operation"]
 	  #threshold = res_constrains[irm][c]["Threshold"]
-	  if attribute not in res_constrains_aux:
-	    res_constrains_aux[attribute] = [ ]
+	  
+	  #if attribute not in res_constrains_aux:
+	    #res_constrains_aux[attribute] = [ ]
+	    
 	  newC = Constraint(idx)
+	  newC.key = c
 	  newC.operation = " <= "
 	  split_cons = constraint.split("<=")
 	  newC.threshold = split_cons[1]
 	  newC.addends = map(lambda x: x.strip(), split_cons[0].split("+"))
-	  
-	  # Gabriel (4/08/2015): Please check if this is correct:      
-	  res_constrains_aux[attribute].append(newC)
+	  newC.attribute = attribute
+	  res_constrains_aux.append(newC)
 	  idx = idx + 1
 
       # Translate allocation request to generate the optimization problem
