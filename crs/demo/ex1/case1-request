@@ -1,0 +1,34 @@
+{
+        "Allocation": [
+        {
+	    "Group": "g0",
+            "Attributes": {
+                "Core": 16 
+            }, 
+            "Type": "Machine"
+        }, 
+        {
+	    "Group": "g1",
+            "Attributes": {
+                "Core": 16 
+            }, 
+            "Type": "Machine"
+        }, 
+        {
+	    "Group": "g2",
+            "Attributes": {
+                "Core": 16 
+            }, 
+            "Type": "Machine"
+        }, 
+        {
+	    "Group": "g3",
+            "Attributes": {
+                "Core": 8 
+            }, 
+            "Type": "Machine"
+
+        }
+        
+    ]
+}

@@ -1,0 +1,79 @@
+{
+        "Allocation": [
+        {
+	    "Group": "g0",
+            "Attributes": {
+                "Core": 16 
+            }, 
+            "Type": "Machine"
+        }, 
+        {
+	    "Group": "g1",
+            "Attributes": {
+                "Core": 16 
+            }, 
+            "Type": "Machine"
+        }, 
+        {
+	    "Group": "g2",
+            "Attributes": {
+                "Core": 16 
+            }, 
+            "Type": "Machine"
+        }, 
+        {
+	    "Group": "g3",
+            "Attributes": {
+                "Core": 8 
+            }, 
+            "Type": "Machine"
+
+        }, 
+        {
+            "Type": "Network Link", 
+            "Attributes": {
+		"Source": "g0",
+                "Target": "g1", 
+                "Bandwidth": 2
+            }
+        },
+        {
+            "Type": "Network Link",  
+            "Attributes": {
+		"Source": "g0",
+                "Target": "g2", 
+                "Bandwidth": 2
+            }
+        },
+        {
+             
+            "Type": "Network Link", 
+            "Attributes": {
+		"Source": "g1",
+                "Target": "g2", 
+                "Bandwidth": 2
+            }
+        }
+        
+    ],
+    "Constraints": [
+        {
+            "Source": "g0", 
+            "ConstraintType": "<=", 
+            "Target": "g1", 
+            "Latency": 1
+        }, 
+        {
+            "Source": "g1", 
+            "ConstraintType": "<=", 
+            "Target": "g2", 
+            "Latency": 1
+        }, 
+        {
+            "Source": "g0", 
+            "ConstraintType": "<=", 
+            "Target": "g2", 
+            "Latency": 1
+        }
+    ]
+}

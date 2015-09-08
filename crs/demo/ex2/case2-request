@@ -1,0 +1,54 @@
+{
+        "Allocation": [
+        {
+	    "Group": "g0",
+            "Attributes": {
+                "Core": 16 
+            }, 
+            "Type": "Machine"
+        }, 
+        {
+	    "Group": "g1",
+            "Attributes": {
+                "Core": 16 
+            }, 
+            "Type": "Machine"
+        }, 
+        {
+	    "Group": "g2",
+            "Attributes": {
+                "Core": 16 
+            }, 
+            "Type": "Machine"
+        }, 
+        {
+	    "Group": "g3",
+            "Attributes": {
+                "Core": 8 
+            }, 
+            "Type": "Machine"
+
+        }
+        
+    ],
+    "Constraints": [
+        {
+            "Source": "g0", 
+            "ConstraintType": "<=", 
+            "Target": "g1", 
+            "Latency": 9
+        }, 
+        {
+            "Source": "g1", 
+            "ConstraintType": "<=", 
+            "Target": "g2", 
+            "Latency": 9
+        }, 
+        {
+            "Source": "g0", 
+            "ConstraintType": "<=", 
+            "Target": "g2", 
+            "Latency": 9
+        }
+    ]
+}

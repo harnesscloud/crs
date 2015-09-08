@@ -1,0 +1,67 @@
+{ "Resources":
+{
+    "N0": {
+        "Attributes": {
+            "Core": 16, 
+            "Disk": 10, 
+            "Memory": 10
+        }, 
+        "Type": "Machine"
+    }, 
+    "N1": {
+        "Attributes": {
+            "Core": 16, 
+            "Disk": 10, 
+            "Memory": 10
+        }, 
+        "Type": "Machine"
+    }, 
+    "N2": {
+        "Attributes": {
+            "Core": 16, 
+            "Disk": 10, 
+            "Memory": 10
+        }, 
+        "Type": "Machine"
+    }, 
+    "N3": {
+        "Attributes": {
+            "Core": 16, 
+            "Disk": 10, 
+            "Memory": 10
+        }, 
+        "Type": "Machine"
+    }, 
+    "N4": {
+        "Attributes": {
+            "Core": 20, 
+            "Disk": 10, 
+            "Memory": 10
+        }, 
+        "Type": "Machine"
+    }, 
+    "N5": {
+        "Attributes": {
+            "Core": 20, 
+            "Disk": 10, 
+            "Memory": 10
+        }, 
+        "Type": "Machine"
+    }, 
+    "N6": {
+        "Attributes": {
+            "Core": 20, 
+            "Disk": 10, 
+            "Memory": 10
+        }, 
+        "Type": "Machine"
+    }, 
+    "N7": {
+        "Attributes": {
+            "Core": 20, 
+            "Disk": 10, 
+            "Memory": 10
+        }, 
+        "Type": "Machine"
+    }
+}}

@@ -1,0 +1,46 @@
+[
+    {
+        "manager": "330e5174-50b7-11e5-835f-d4bed97a2bd9", 
+        "alloc_req": {
+            "Attributes": {
+                "Core": 16
+            }, 
+            "Type": "Machine", 
+            "Group": "g0"
+        }, 
+        "res_id": "N1"
+    }, 
+    {
+        "manager": "330e5174-50b7-11e5-835f-d4bed97a2bd9", 
+        "alloc_req": {
+            "Attributes": {
+                "Core": 16
+            }, 
+            "Type": "Machine", 
+            "Group": "g1"
+        }, 
+        "res_id": "N0"
+    }, 
+    {
+        "manager": "330e5174-50b7-11e5-835f-d4bed97a2bd9", 
+        "alloc_req": {
+            "Attributes": {
+                "Core": 16
+            }, 
+            "Type": "Machine", 
+            "Group": "g2"
+        }, 
+        "res_id": "N7"
+    }, 
+    {
+        "manager": "330e5174-50b7-11e5-835f-d4bed97a2bd9", 
+        "alloc_req": {
+            "Attributes": {
+                "Core": 8
+            }, 
+            "Type": "Machine", 
+            "Group": "g3"
+        }, 
+        "res_id": "N6"
+    }
+]
