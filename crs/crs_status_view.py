@@ -55,7 +55,7 @@ class CRSStatusView(FlaskView):
                      if ready:
                         CRSStatusView.addrs[r] = out_addrs 
          #print "managers=", str(managers)
-         print "resources=", str(resources)
+         #print "resources=", str(resources)
          #print "reservations=", str(reservations)
          #print "addrs=", str(CRSStatusView.addrs) 
          return json_reply({'managers': managers, 'resources': resources, 'reservations': reservations, 'addrs': CRSStatusView.addrs})

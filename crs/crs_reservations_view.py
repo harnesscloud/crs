@@ -107,9 +107,7 @@ class CRSReservationsView(ReservationsView):
        schedule = self.group_requests(CRSReservationsView._scheduler(CRSManagersView.managers,\
                                       CRSResourcesView.resources, \
                                       alloc_req, alloc_constraints, CRSResourcesView.resource_constraints))
-                                                 
-       
-       print "I AM HERE!"                                          
+                                                                                      
        iResIDs = []
        rollback = False
        for s in schedule:          
@@ -186,7 +184,6 @@ class CRSReservationsView(ReservationsView):
 
     ###############################################  release reservation ############   
     def _release_reservation(self, reservations):
-       print "releasing..." + str(reservations)
        for reservation in reservations:
           if reservation not in ReservationsView.reservations: 
              raise Exception("cannot find reservation: " + reservation)

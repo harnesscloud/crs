@@ -34,9 +34,9 @@ parser.add_option("-s", "--scheduler", dest="scheduler", default="simple",
 
 (options,_) = parser.parse_args()
                   
-def request_resources (): 
+def request_resources(): 
   global options
-  threading.Timer(3, request_resources).start (); 
+  threading.Timer(3.0, request_resources).start (); 
   try:
      hresman.utils.get('v3/resources/request', options.PORT)
   except:
