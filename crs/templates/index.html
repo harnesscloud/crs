@@ -60,7 +60,7 @@
     			         $("<tr><th class='tg-kr94'>" + r['Name'] + "</th>" +
 			              "<th class='tg-kr94'>" +  
 			                  "<img src=\"/static/" + r['Type'] + ".png\" height=\"40\" style=\"max-width: 120px\">"
-			                   + "<br>" + r['Type'] + "</th>"   +
+			                  + "<br>" + r['Type'] + "</th>"   +
 			              "<th class='tg-kr94'>" + pretty_json(JSON.stringify(r['Attributes'])) + "</th></tr>")
 			              .appendTo(table); 
 			         });                
@@ -78,28 +78,27 @@
 				      var table = $("<table class='tg'>").appendTo(sect_reservations);
 			         $("<tr><th class='tg-9wi8'>rID</th>" +
 			           "<th class='tg-9wi8'>Manager</th>" +			       
-			           "<th class='tg-9wi8'>Resource</th>"   +
-                    "<th class='tg-9wi8'>Allocation</th>"   +			         
-			           "<th class='tg-9wi8'>Address</th></tr>")
+                    "<th class='tg-9wi8'>Allocation Request</th>"   +				           
+			           "<th class='tg-9wi8'>Instance</th></tr>")
 			            .appendTo(table);
                   $.each(reservations[i], function(j, a) {
                         sh = a["sched"];
                         
                         // types and attributes
-                        ress = []; 
-                        allocs = []
-                        for (var s in sh) {
-                           ress.push(sh[s]["ID"] + "<img src=\"/static/" + sh[s]["Type"] + ".png\" height=\"30\" style=\"max-width: 120px\">");                           
-                           allocs.push(sh[s]["Type"] + ":" + JSON.stringify(sh[s]["Attributes"])); 
-                        }
+                        ress = ""; 
+                        allocs = ""
                         
+                        for (var s in sh) {
+                           ress = ress + "<li><b>" + sh[s]["ID"] + "</b><img src=\"/static/" + sh[s]["Type"] + ".png\" style=\"height:30px;vertical-align:middle\"><br>(" + addrs[i][s]  + ")</li>";                           
+                           allocs = allocs + "<li><b>" + sh[s]["Type"] + ":</b>" + JSON.stringify(sh[s]["Attributes"]) +  "</li>"                          
+                        }
+                                                
                         // attributes
        			         $("<tr><th class='tg-kr94'>" +  pretty_json(JSON.stringify(a["iRes"])) +
        			           "<th>" + a["name"] + " (" + a["addr"] + ":" + a["port"] + ")"
-       			           + "<th>" + ress
-       			           + "<th>" + pretty_json(JSON.stringify(allocs))
-       			           + "<th>" + pretty_json(JSON.stringify(addrs[i]))
-			                 + "</tr>")
+       			           + "<th align=\"left\">" + "<ol>" + allocs + "</ol>"
+       			           + "<th align=\"left\">" + "<ol>" + ress + "</ol>"
+  		                   + "</tr>")
 			                 .appendTo(table); 
 		            
 			         }); 
