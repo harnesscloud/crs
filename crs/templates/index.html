@@ -18,7 +18,7 @@
 .tg th{font-family:Arial, sans-serif;font-size:12px;font-weight:normal;padding:2px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
 .tg .tg-9wi7{font-weight:bold;font-size:12px;background-color:#fffc9e;text-align:center}
 .tg .tg-9wi8{font-weight:bold;font-size:12px;background-color:#9efcff;text-align:center}
-.tg .tg-kr94{font-size:12px;text-align:left}
+.tg .tg-kr94{font-size:12px;text-align:center }
 
 </style>
     
@@ -26,7 +26,7 @@
 
 <body>
     <img src="{{url_for('static', filename='HARNESSlogo.jpg')}}"  alt="Logo" height="100" style="max-width: 120px;"\>
-    <h1>CRS Frontend (v3) </h1>
+    <h1>CRS Frontend </h1>
     
 <script>	
    function pretty_json(obj) {
@@ -57,8 +57,10 @@
 			           "<th class='tg-9wi7'>Type</th>"   +
 			           "<th class='tg-9wi7'>Attributes</th></tr>").appendTo(table);
                   $.each(resources[i], function(j, r) {
-    			         $("<tr><th class='tg-kr94'>" + j + "</th>" +
-			              "<th class='tg-kr94'>" + r['Type'] + "</th>"   +
+    			         $("<tr><th class='tg-kr94'>" + r['Name'] + "</th>" +
+			              "<th class='tg-kr94'>" +  
+			                  "<img src=\"/static/" + r['Type'] + ".png\" height=\"40\" style=\"max-width: 120px\">"
+			                   + "<br>" + r['Type'] + "</th>"   +
 			              "<th class='tg-kr94'>" + pretty_json(JSON.stringify(r['Attributes'])) + "</th></tr>")
 			              .appendTo(table); 
 			         });                
@@ -87,18 +89,14 @@
                         ress = []; 
                         allocs = []
                         for (var s in sh) {
-                           ress.push(sh[s]["ID"]);
-                           
+                           ress.push(sh[s]["ID"] + "<img src=\"/static/" + sh[s]["Type"] + ".png\" height=\"30\" style=\"max-width: 120px\">");                           
                            allocs.push(sh[s]["Type"] + ":" + JSON.stringify(sh[s]["Attributes"])); 
-                           
                         }
                         
                         // attributes
-                        
-                           
-       			         $("<tr><th class='tg-kr94'>" + a["iRes"] +
+       			         $("<tr><th class='tg-kr94'>" +  pretty_json(JSON.stringify(a["iRes"])) +
        			           "<th>" + a["name"] + " (" + a["addr"] + ":" + a["port"] + ")"
-       			           + "<th>" + pretty_json(JSON.stringify(ress))
+       			           + "<th>" + ress
        			           + "<th>" + pretty_json(JSON.stringify(allocs))
        			           + "<th>" + pretty_json(JSON.stringify(addrs[i]))
 			                 + "</tr>")
@@ -189,9 +187,9 @@ var ihandle=setInterval(function(){
 
 </script>
 
-<input type="button" value="Request Resources" onClick="request_resources()"</button> 
+<input type="button" value="Update" onClick="request_resources()"</button> 
 <input type="button" value="Reset" onClick="reset()"</button>  
-<input type="button" value="Release all" onClick="release_all()"</button>  
+<input type="button" value="Release" onClick="release_all()"</button>  
   
 <hr>
 <h3>Resources</h3>

@@ -44,7 +44,7 @@ def request_resources():
           
 request_resources() 
 log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+#log.setLevel(logging.ERROR)
 
 
 CRSReservationsView._select_scheduler(options.scheduler)

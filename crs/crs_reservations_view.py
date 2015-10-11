@@ -175,7 +175,10 @@ class CRSReservationsView(ReservationsView):
              
              for i in instances:                
                 addrs.extend(instances[i]["Address"])
-                ready = ready and instances[i]["Ready"].upper() == "TRUE"
+                status = instances[i]["Ready"]
+                if type(status) is bool:
+                   status = "TRUE"
+                ready = ready and status.upper() == "TRUE"
           if ready:
              check_result["Instances"][reservation] = { "Ready": "True", "Address": addrs }
           else:

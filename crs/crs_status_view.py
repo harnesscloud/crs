@@ -3,6 +3,8 @@ import deps
 from flask.ext.classy import FlaskView, route
 from flask import  render_template
 from hresman.utils import json_request, json_reply, json_error
+import json
+import copy
 
 from crs_managers_view import CRSManagersView
 from crs_resources_view import CRSResourcesView
@@ -19,6 +21,19 @@ class CRSStatusView(FlaskView):
       except Exception as e:
          return json_error(e)
          
+    def sort_resources(self, resources): 
+       ret = { }
+       for irm in resources:
+          ress = resources[irm]
+          irm_res = []
+          for r in ress:
+             res = ress[r].copy()
+             res["Name"] = r
+             irm_res.append(res)
+          irm_res.sort(key=lambda x:(x['Type'], x['Name']))
+          ret[irm] = irm_res 
+                   
+       return ret         
     @route("/data")        
     def status_data(self):      
       try:
@@ -58,6 +73,8 @@ class CRSStatusView(FlaskView):
          #print "resources=", str(resources)
          #print "reservations=", str(reservations)
          #print "addrs=", str(CRSStatusView.addrs) 
-         return json_reply({'managers': managers, 'resources': resources, 'reservations': reservations, 'addrs': CRSStatusView.addrs})
+       
+         sorted_resources = self.sort_resources(resources)
+         return json_reply({'managers': managers, 'resources': sorted_resources, 'reservations': reservations, 'addrs': CRSStatusView.addrs})
       except Exception as e:
          return json_error(e)    
