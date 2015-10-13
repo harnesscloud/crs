@@ -44,13 +44,12 @@
 			   var resources = data["result"]["resources"];
 			   var reservations = data["result"]["reservations"];
 			   var addrs = data["result"]["addrs"];
-			   var n = 1;
 			   if (Object.keys(managers).length == 0) {
 			      $("<h4>No IRMs have been registered!</h4>").appendTo(sect_resources);
 			   } else {
 			      $.each(managers, function(i, v) {
 			         var hdr = $("<h5>").appendTo(sect_resources);
-			         hdr.append(n + ". " + v["Name"] + " (" + v["Address"] + ": " + 
+			         hdr.append(v["Name"] + " (" + v["Address"] + ": " + 
 			                    v["Port"] + " / " + v["ManagerID"] + ")");
 			         var table = $("<table class='tg'>").appendTo(sect_resources);
 			         $("<tr><th class='tg-9wi7'>ID</th>" +
@@ -64,10 +63,8 @@
 			              "<th class='tg-kr94'>" + pretty_json(JSON.stringify(r['Attributes'])) + "</th></tr>")
 			              .appendTo(table); 
 			         });                
-			         n++;
 			      });
 			  }
-			  var n = 1;
 			  var sect_reservations = $("#reservations").empty();
 			  if (Object.keys(reservations).length == 0) {
 			      $("<h4>No reservations!</h4>").appendTo(sect_reservations);
@@ -78,9 +75,10 @@
 				      var table = $("<table class='tg'>").appendTo(sect_reservations);
 			         $("<tr><th class='tg-9wi8'>rID</th>" +
 			           "<th class='tg-9wi8'>Manager</th>" +			       
-                    "<th class='tg-9wi8'>Allocation Request</th>"   +				           
+                    "<th class='tg-9wi8'>Allocation</th>"   +				           
 			           "<th class='tg-9wi8'>Instances</th></tr>")
 			            .appendTo(table);
+			      n = 0;
                   $.each(reservations[i], function(j, a) {
                         sh = a["sched"];
                         
@@ -89,7 +87,7 @@
                         allocs = ""
                         
                         for (var s in sh) {
-                           ress = ress + "<li><b>" + sh[s]["ID"] + "</b><img src=\"/static/" + sh[s]["Type"] + ".png\" style=\"height:30px;vertical-align:middle\"><br>(" + addrs[i][s]  + ")</li>";                           
+                           ress = ress + "<li><b>" + sh[s]["ID"] + "</b><img src=\"/static/" + sh[s]["Type"] + ".png\" style=\"height:30px;vertical-align:middle\"><br>(" + addrs[i][n]  + ")</li>"; n = n + 1;                          
                            allocs = allocs + "<li><b>" + sh[s]["Type"] + ":</b>" + JSON.stringify(sh[s]["Attributes"]) +  "</li>"                          
                         }
                                                 
@@ -102,7 +100,6 @@
 			                 .appendTo(table); 
 		            
 			         }); 
-			         n++;
 			      });
 			      /*  			  
 			      var list = $("<ol>").appendTo(sect_reservations);

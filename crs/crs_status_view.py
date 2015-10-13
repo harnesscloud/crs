@@ -52,7 +52,7 @@ class CRSStatusView(FlaskView):
             if r not in CRSStatusView.addrs:
                   
                   try:
-                     ads=CRSReservationsView()._check_reservation([r])
+                     ads=CRSReservationsView()._check_reservation_grouped([r])
                   except:
                      ads = {"Instances": { r : { "Ready": "True", "Address": ["error"] } } } 
                   if "Instances" in ads:
