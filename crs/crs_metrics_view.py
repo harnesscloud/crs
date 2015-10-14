@@ -25,15 +25,21 @@ class CRSMetricsView(MetricsView):
            raise Exception("cannot find reservation: " + reservID)
            
         resData = reservations[reservID]
-         
+        print "resData=", json.dumps(resData, indent=4) 
+        ret = {}
         for rd in resData:        
            r=post({ "ReservationID": rd['iRes'] }, "checkReservation", rd['port'], rd['addr'])
            if "result" not in r:
               raise Exception("error extracting address from reservationID: ", reservID)
+              
+           print "r['result'] =", json.dumps(r["result"], indent=4)    
            instances = r["result"]["Instances"]
            
            for i in instances:
-              if instances[i]["Ready"].upper() == "FALSE":
+              status = instances[i]["Ready"]
+              if type(status) is bool:
+                  status = "TRUE"
+              if status.upper() == "FALSE":
                  raise Exception("Reservation: " + i + " not ready!")
 
               for addr in instances[i]["Address"]:
@@ -43,7 +49,8 @@ class CRSMetricsView(MetricsView):
                            rd['port'], rd['addr'])
                     if "result" not in r:
                        raise Exception("Cannot get metrics: " + str(r))       
-                    return r["result"]       
+                    ret[addr] = r["result"]["Metrics"]
+        return { "Metrics": ret }    
         
         raise Exception("Cannot find address for reservation: " + reservID) 
                  
