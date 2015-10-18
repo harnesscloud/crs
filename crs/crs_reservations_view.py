@@ -16,16 +16,31 @@ import json
 import copy
 
 class CRSReservationsView(ReservationsView):
-    _scheduler=None
+    _scheduler_alg=None
+    _scheduler_option=None
     
     @staticmethod
-    def _select_scheduler(scheduler):
+    def _select_scheduler(scheduler, alloc_req, alloc_constraints, monitor):
+       if scheduler == "":
+          scheduler=CRSReservationsView._scheduler_option
+
+       if scheduler == "auto":
+          if len([x for x in alloc_req if x["Type"] == "Link"]) > 0:
+             scheduler="NC"
+             print "auto scheduler selection: NC"
+          elif len([x for x in alloc_constraints if 'ID' not in x]) > 0:
+             scheduler="NC"
+             print "auto scheduler selection: NC"          
+          else:
+             scheduler="simple"
+             print "auto scheduler selection: simple"
+             
        if scheduler == "simple":
           import simple_scheduler
-          CRSReservationsView._scheduler=simple_scheduler.schedule
+          CRSReservationsView._scheduler_alg=simple_scheduler.schedule
        elif scheduler == "NC":
           import schedulerNC
-          CRSReservationsView._scheduler=schedulerNC.schedule
+          CRSReservationsView._scheduler_alg=schedulerNC.schedule
        else:
           raise Exception("invalid scheduler: %s" % scheduler)
 
@@ -102,15 +117,16 @@ class CRSReservationsView(ReservationsView):
     ###############################################  create reservation ############ 
     def _create_reservation(self, scheduler, alloc_req, alloc_constraints, monitor):
         
-       if scheduler != "":
-          CRSReservationsView._select_scheduler(scheduler)
        
+       CRSReservationsView._select_scheduler(scheduler, alloc_req, alloc_constraints, monitor)
        
-       schedule = self.group_requests(CRSReservationsView._scheduler(CRSManagersView.managers,\
+       schedule0 = CRSReservationsView._scheduler_alg(CRSManagersView.managers,\
                                       CRSResourcesView.resources, \
-                                      alloc_req, alloc_constraints, CRSResourcesView.resource_constraints))
+                                      alloc_req, alloc_constraints, CRSResourcesView.resource_constraints)
+       schedule = self.group_requests(schedule0)
        
-       #print json.dumps(schedule, indent=4)                                                                               
+       #print "schedule0=", json.dumps(schedule0, indent=4)
+       print "schedule=", json.dumps(schedule, indent=4)       
        iResIDs = []
        rollback = False
        for s in schedule:          
