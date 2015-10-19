@@ -88,7 +88,11 @@
                         
                         for (var s in sh) {
                            ress = ress + "<li><b>" + sh[s]["ID"] + "</b><img src=\"/static/" + sh[s]["Type"] + ".png\" style=\"height:30px;vertical-align:middle\"><br>(" + addrs[i][n]  + ")</li>"; n = n + 1;                          
-                           allocs = allocs + "<li><b>" + sh[s]["Type"] + ":</b>" + JSON.stringify(sh[s]["Attributes"]) +  "</li>"                          
+                           attribs = sh[s]["Attributes"]
+                           if ("UserData" in attribs) {
+                              delete attribs["UserData"]
+                           }
+                           allocs = allocs + "<li><b>" + sh[s]["Type"] + ":</b>" + JSON.stringify(attribs) +  "</li>"                          
                         }
                                                 
                         // attributes
