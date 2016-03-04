@@ -11,9 +11,21 @@ from hresman.utils import json_request, json_reply, json_error
 from hresman.reservations_view import ReservationsView
 from crs_managers_view import CRSManagersView
 from crs_resources_view import CRSResourcesView
+
+import logging, logging.handlers as handlers
 import uuid
 import json
 import copy
+
+logger = logging.getLogger("Rotating Log")
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter(fmt='%(asctime)s.%(msecs)d - %(levelname)s: %(filename)s - %(funcName)s: %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
+handler = handlers.TimedRotatingFileHandler("crs-resview.log",when="H",interval=24,backupCount=0)
+## Logging format
+handler.setFormatter(formatter)
+if not logger.handlers:
+    logger.addHandler(handler)
+
 
 class CRSReservationsView(ReservationsView):
     _scheduler_alg=None
@@ -125,7 +137,9 @@ class CRSReservationsView(ReservationsView):
                                       alloc_req, alloc_constraints, CRSResourcesView.resource_constraints)
        schedule = self.group_requests(schedule0)
        
-       #print "schedule0=", json.dumps(schedule0, indent=4)
+       logger.info("schedule0=%s", json.dumps(schedule0, indent=4))
+       logger.info("schedule=%s",  json.dumps(schedule,  indent=4))
+
        print "schedule=", json.dumps(schedule, indent=4)       
        iResIDs = []
        rollback = False
@@ -146,6 +160,7 @@ class CRSReservationsView(ReservationsView):
                    "Monitor": monitor_data }
 
           try:
+             logger.info("data=%s", json.dumps(data, indent=4))
              ret = hresman.utils.post(data, 'createReservation', port, addr)
 
           except Exception as e:

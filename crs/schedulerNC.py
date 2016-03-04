@@ -7,6 +7,8 @@ from hresman import utils
 from glpk import *
 from glpk.glpk_parser import *
 from glpk.glpkpi import *
+
+import logging, logging.handlers as handlers
 import json
 
 '''   
@@ -16,7 +18,16 @@ Resources: {'1d1c5582-1b74-11e5-bba3-60a44cabf185': {u'ID2': {u'Attributes': {u'
 
 Allocations: [{u'Group': u'g0', u'Type': u'Machine', u'Attributes': {u'Cores': 8, u'Disk': 8192, u'Memory': 1024}}, {u'Group': u'g0', u'Type': u'Machine', u'Attributes': {u'Cores': 8, u'Disk': 8192, u'Memory': 1024}}, {u'Group': u'g0', u'Type': u'DFECluster', u'Attributes': {u'Cores': 8, u'Disk': 8192, u'Memory': 1024}}]
     '''
-
+'''
+logger = logging.getLogger("Rotating Log")
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter(fmt='%(asctime)s.%(msecs)d - %(levelname)s: %(filename)s - %(funcName)s: %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
+handler = handlers.TimedRotatingFileHandler("nc-scheduler.log",when="H",interval=24,backupCount=0)
+## Logging format
+handler.setFormatter(formatter)
+if not logger.handlers:
+    logger.addHandler(handler)
+'''
 
 class Resource:
 
@@ -262,13 +273,22 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
 
 def generate_reservations(solution, resources, reservation, resources_table, compound_resources_table):
     result = [None] * len(reservation)
+
+    logger.info("solution = %s", json.dumps(solution,indent=4))
+    logger.info("resources = ", resources)
+    logger.info("reservation = ", json.dumps(reservation,indent=4))
+    logger.info("resources_table = ", resources_table)
+    logger.info("compound_resources_table = ", compound_resources_table)
    
     try:
         # Generate reservations of single resources
         for s in solution:
             if s[0] == 'r' and solution[s] > 0:
+                print "s = ", s
                 keys = s.split('_')
                 R = resources[resources_table[keys[1]]]
+		print "keys = ", keys
+		print "R = ", R
                 result[int(keys[0][1:])] = {
                     "manager": R.irm, "res_id": R.key, "alloc_req": reservation[int(keys[0][1:])]}
 
@@ -280,8 +300,12 @@ def generate_reservations(solution, resources, reservation, resources_table, com
         for s in solution:
             ps = s.split('_')
             if len(ps) > 1 and (ps[0] in compound_resources_table) and solution[s] > 0.0:
+               print "s = ", s
                res = ps[0]
                R = compound_resources_table[res]
+	       print "ps = ", ps
+	       print "res = ", res
+	       print "R = ", R
                result.append({"manager": R.irm, "res_id": R.key, "alloc_req": {
                               'Type': 'Link', 'Attributes': {ps[1]: solution[s]}}})
             '''   
@@ -297,6 +321,8 @@ def generate_reservations(solution, resources, reservation, resources_table, com
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
         raise
+    print ":::::>", json.dumps(result)
+    print "Exiting generate_reservations"
     return result
 
 
