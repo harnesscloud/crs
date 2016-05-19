@@ -58,7 +58,7 @@
                   $.each(resources[i], function(j, r) {
     			         $("<tr><th class='tg-kr94'>" + r['Name'] + "</th>" +
 			              "<th class='tg-kr94'>" +  
-			                  "<img src=\"/static/" + r['Type'] + ".png\" height=\"40\" style=\"max-width: 120px\">"
+			                  "<img src=\"/static/" + r['Type'].split('-', 1)[0] + ".png\" height=\"40\" style=\"max-width: 120px\">"
 			                  + "<br>" + r['Type'] + "</th>"   +
 			              "<th class='tg-kr94'>" + pretty_json(JSON.stringify(r['Attributes'])) + "</th></tr>")
 			              .appendTo(table); 
@@ -87,7 +87,7 @@
                         allocs = ""
                         
                         for (var s in sh) {
-                           ress = ress + "<li><b>" + sh[s]["ID"] + "</b><img src=\"/static/" + sh[s]["Type"] + ".png\" style=\"height:30px;vertical-align:middle\"><br>(" + addrs[i][n]  + ")</li>"; n = n + 1;                          
+                           ress = ress + "<li><b>" + sh[s]["ID"] + "</b><img src=\"/static/" + sh[s]["Type"].split("-")[0] + ".png\" style=\"height:30px;vertical-align:middle\"><br>(" + addrs[i][n]  + ")</li>"; n = n + 1;                          
                            attribs = sh[s]["Attributes"]
                            if ("UserData" in attribs) {
                               delete attribs["UserData"]

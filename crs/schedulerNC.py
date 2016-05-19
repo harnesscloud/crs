@@ -110,14 +110,14 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
         raise
-
+    
     try:
         # " - Compound Resources"
         links = set()  # the ids of compound resources (link between two resources)
         # stores all the bounds for compound attributes (Bounds are added to
         # the LP at the end)
         attr_bounds = ""
-
+        print "====>", compound_resources
         for ca in compound_attributes:
             #"Generating compound capacity constraints:"
             for j in range(num_resources):
@@ -265,6 +265,7 @@ def generate_reservations(solution, resources, reservation, resources_table, com
    
     try:
         # Generate reservations of single resources
+        print ":::::::>", solution
         for s in solution:
             if s[0] == 'r' and solution[s] > 0:
                 keys = s.split('_')
@@ -353,7 +354,7 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
         _resources = copy.deepcopy(resources)
         for irm in resources:
             for res in resources[irm]:
-                if resources[irm][res]["Type"] != "Machine" and resources[irm][res]["Type"] != "Link":
+                if resources[irm][res]["Type"] != "Machine" and resources[irm][res]["Type"] != "Link" and resources[irm][res]["Type"].split("-")[0] != "Web":
                     del _resources[irm][res]
         resources = _resources
         # managers: list of managers (not used)

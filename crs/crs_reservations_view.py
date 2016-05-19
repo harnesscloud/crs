@@ -147,7 +147,7 @@ class CRSReservationsView(ReservationsView):
 
           try:
              ret = hresman.utils.post(data, 'createReservation', port, addr)
-
+              
           except Exception as e:
              print "rolling back! " + str(e)
              rollback = True
@@ -162,7 +162,6 @@ class CRSReservationsView(ReservationsView):
              rID = map(lambda x: x if x.partition("/")[2] == "" else x.partition("/")[2], ret["result"]["ReservationID"])
              iResIDs.append({"addr": addr, "port": port, "name": CRSManagersView.managers[s]['Name'], \
                              "iRes": rID, "sched": schedule[s]})
-       
        if not rollback:
           resID = uuid.uuid1()
           ReservationsView.reservations[str(resID)] = iResIDs
