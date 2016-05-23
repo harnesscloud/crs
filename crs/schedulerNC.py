@@ -1,8 +1,9 @@
-import deps
+#import deps
 import copy
 import sys
 import traceback
-from hresman import utils
+from pprint import pprint
+#from hresman import utils
 
 from glpk import *
 from glpk.glpk_parser import *
@@ -49,19 +50,24 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
     f = open(filename, 'w')
     f.write('Minimize\n')
     f.write('\tvalue: ')
-
+    
     # Objective function
     try:
+        '''
         weight = [0] * num_resources
         for i in range(1, num_resources):
             weight[i] = weight[i - 1] * reservation_size + 1
+        '''
         out = ""
+        
         for R in resources:
             for r in reservation:
 
                 if r.type == R.type:
-                    out = out + str(weight[int(R.id)]) + \
-                        " " + r.key + "_" + R.key + " + "
+                    #out = out + str(weight[int(R.id)]) + \
+                    #    " " + r.key + "_" + R.key + " + "
+
+                    out = out + " " + r.key + "_" + R.key + " + "                   
         f.write(out)
         f.seek(-3, 2)  # remove last " + "
         f.write('\n')
@@ -117,7 +123,8 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
         # stores all the bounds for compound attributes (Bounds are added to
         # the LP at the end)
         attr_bounds = ""
-        print "====>", compound_resources
+        #pprint(compound_resources)
+        #print "====>", compound_resources
         for ca in compound_attributes:
             #"Generating compound capacity constraints:"
             for j in range(num_resources):
@@ -168,6 +175,7 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
                                 addends = addends + ca + "_" + R.key + Rp.key + r.key + Rp.key + " + "
                                 attr_bounds = attr_bounds + "\t0 <= " + ca + "_" + R.key + \
                                     Rp.key + r.key + Rp.key + " <= " + `accp` + "\n"
+                    
                     if len(addends) > 0:
                         f.write(
                             "\t" + compound_resources[j][jp].key + "_" + ca + ": " + addends)
@@ -265,25 +273,30 @@ def generate_reservations(solution, resources, reservation, resources_table, com
    
     try:
         # Generate reservations of single resources
-        print ":::::::>", solution
+        #pprint(solution)
+        
+        rs = set()
         for s in solution:
-            if s[0] == 'r' and solution[s] > 0:
+            if s[0] == 'r' and solution[s] > 0: 
                 keys = s.split('_')
                 R = resources[resources_table[keys[1]]]
+                rs.add(R.key)
                 result[int(keys[0][1:])] = {
                     "manager": R.irm, "res_id": R.key, "alloc_req": reservation[int(keys[0][1:])]}
 
         # Remove None elements in reservation array
         result = [x for x in result if x != None]
-
+              
         # Generate reservations of compound resources
         #print ":::::>", compound_resources_table
+ 
         for s in solution:
             ps = s.split('_')
             if len(ps) > 1 and (ps[0] in compound_resources_table) and solution[s] > 0.0:
                res = ps[0]
                R = compound_resources_table[res]
-               result.append({"manager": R.irm, "res_id": R.key, "alloc_req": {
+               if (R.source in rs) and (R.target in rs):
+                  result.append({"manager": R.irm, "res_id": R.key, "alloc_req": {
                               'Type': 'Link', 'Attributes': {ps[1]: solution[s]}}})
             '''   
             if s[0] == 'l' and solution[s] > 0:
@@ -360,18 +373,18 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
         # managers: list of managers (not used)
         # print "managers: " + `managers`
         # resources: list of resources of each Manager
-        print "resources: " + `resources`
+        #print "resources: " + `resources`
         # res_constrains: constrains relating several resources
         # alloc_req: an allocation request
-        print "alloc_req: " + `alloc_req`
+        #print "alloc_req: " + `alloc_req`
         # constrains: distance constrains
-        print "constraints: " + `constrains`
+        #print "constraints: " + `constrains`
 
         reservation = alloc_req
 
         resources, enc_dict = encode_resource_names(resources)
         res_constrains = encode_resource_constraints(res_constrains)
-        print "res_constrains': " + `res_constrains`
+        #print "res_constrains': " + `res_constrains`
 
         # Translate resources to generate the optimization problem
         resources_aux = []
@@ -418,6 +431,8 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
                     compound_resources[source][target] = Resource(idx)
                     compound_resources[source][target].key = R
                     compound_resources[source][target].irm = irm
+                    compound_resources[source][target].source = resources[irm][R]["Attributes"]["Source"]
+                    compound_resources[source][target].target = resources[irm][R]["Attributes"]["Target"]                    
                     compound_resources_table[R] = compound_resources[source][
                         target]  # save resource in table to get fast access by key   
                     idx = idx + 1
@@ -517,7 +532,7 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
         distances_aux = [[None] * len(reservation_aux)
                          for _ in range(len(reservation_aux))]
         distance_attributes = set()
-        print "distance_aux before: ", json.dumps(distances_aux, indent=4)
+        #print "distance_aux before: ", json.dumps(distances_aux, indent=4)
         for d in constrains:
             source = d["Source"]
             target = d["Target"]
@@ -537,7 +552,7 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
                             if ip < i:
                                 distances_aux[ip][i][a] = d[a]
 
-        print "distance_aux after: ", json.dumps(distances_aux, indent=4)
+        #print "distance_aux after: ", json.dumps(distances_aux, indent=4)
         result = []
 
         # Generates linear optimization problem
@@ -548,7 +563,7 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
         lp = glpk("crs.lp")
         value = lp.solve()
         solution = lp.solution()
-        print "solution=", json.dumps(solution, indent=4)
+        #print "solution=", json.dumps(solution, indent=4)
 
         # Checks if GLPK found a solution
         if glp_get_status(lp._lp) != 5:
