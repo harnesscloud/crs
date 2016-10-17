@@ -9,6 +9,8 @@ from glpk import *
 from glpk.glpk_parser import *
 from glpk.glpkpi import *
 import json
+import random
+
 
 '''   
 Managers: {'1d1c5582-1b74-11e5-bba3-60a44cabf185': {'Name': u'IRM-SEAL\n', 'ManagerID': '1d1c5582-1b74-11e5-bba3-60a44cabf185', 'Port': 54106, 'Address': '127.0.0.1'}, '1e2e967e-1b74-11e5-bba3-60a44cabf185': {'Name': u'IRM-HERON\n', 'ManagerID': '1e2e967e-1b74-11e5-bba3-60a44cabf185', 'Port': 51186, 'Address': '127.0.0.1'}}
@@ -51,22 +53,14 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
     f.write('Minimize\n')
     f.write('\tvalue: ')
     
+    resources2 = list(resources)
+    random.shuffle(resources2)
     # Objective function
     try:
-        '''
-        weight = [0] * num_resources
-        for i in range(1, num_resources):
-            weight[i] = weight[i - 1] * reservation_size + 1
-        '''
         out = ""
-        
-        for R in resources:
+        for R in resources2:
             for r in reservation:
-
                 if r.type == R.type:
-                    #out = out + str(weight[int(R.id)]) + \
-                    #    " " + r.key + "_" + R.key + " + "
-
                     out = out + " " + r.key + "_" + R.key + " + "                   
         f.write(out)
         f.seek(-3, 2)  # remove last " + "
@@ -556,6 +550,7 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
         result = []
 
         # Generates linear optimization problem
+             
         generate_lp("crs.lp", resources_aux, compound_resources, res_constrains_aux, reservation_aux,
                     compound_reservation, distances_aux, compound_attributes, distance_attributes)
 
