@@ -1,6 +1,7 @@
 import deps
 import copy
 from hresman import utils
+import random
 
 def compute_capacity(managers, mgr_id, resource, request):
    if mgr_id not in managers:
@@ -31,7 +32,7 @@ def match_constraints(constraints, resID, resource, alloc):
            raise Exception("malformed constraint: " + str(constraint))         
     return match      
 
-@staticmethod
+#@staticmethod
 def schedule(managers, resources, alloc_req, alloc_constraints, res_constraints):
    '''   
    Managers: {'1d1c5582-1b74-11e5-bba3-60a44cabf185': {'Name': u'IRM-SEAL\n', 'ManagerID': '1d1c5582-1b74-11e5-bba3-60a44cabf185', 'Port': 54106, 'Address': '127.0.0.1'}, '1e2e967e-1b74-11e5-bba3-60a44cabf185': {'Name': u'IRM-HERON\n', 'ManagerID': '1e2e967e-1b74-11e5-bba3-60a44cabf185', 'Port': 51186, 'Address': '127.0.0.1'}}
@@ -47,7 +48,10 @@ def schedule(managers, resources, alloc_req, alloc_constraints, res_constraints)
       sc = {}
       for mgr in state_res:
          resources = state_res[mgr]
-         for res in resources:
+         
+         rkeys = resources.keys()
+         random.shuffle(rkeys)
+         for res in rkeys:         
             if resources[res]['Type'] == rq['Type'] and match_constraints(alloc_constraints, res, resources, rq):
                ret = compute_capacity(managers, mgr, resources[res], rq)
                if ret != {}:
