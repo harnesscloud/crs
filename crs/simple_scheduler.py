@@ -32,7 +32,7 @@ def match_constraints(constraints, resID, resource, alloc):
            raise Exception("malformed constraint: " + str(constraint))         
     return match      
 
-#@staticmethod
+@staticmethod
 def schedule(managers, resources, alloc_req, alloc_constraints, res_constraints):
    '''   
    Managers: {'1d1c5582-1b74-11e5-bba3-60a44cabf185': {'Name': u'IRM-SEAL\n', 'ManagerID': '1d1c5582-1b74-11e5-bba3-60a44cabf185', 'Port': 54106, 'Address': '127.0.0.1'}, '1e2e967e-1b74-11e5-bba3-60a44cabf185': {'Name': u'IRM-HERON\n', 'ManagerID': '1e2e967e-1b74-11e5-bba3-60a44cabf185', 'Port': 51186, 'Address': '127.0.0.1'}}
