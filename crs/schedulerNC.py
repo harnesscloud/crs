@@ -32,6 +32,7 @@ class Resource:
         self.group = None
         self.source = None
         self.target = None
+        self.id_constraint = None
 
 
 class Constraint:
@@ -45,7 +46,6 @@ class Constraint:
 
 
 def generate_lp(filename, resources, compound_resources, constraints, reservation, compound_reservation, distances, compound_attributes, distance_attributes):
-
     reservation_size = len(reservation)
     num_resources = len(resources)
 
@@ -75,12 +75,15 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
 
     # Linear constrains
     try:
+        bin_var1 = None
+            
         # Unicity constrains
         for r in reservation:
             f.write("\tunicity" + r.key + ": ")
             for R in resources:
                 if r.type == R.type:
                     f.write(r.key + "_" + R.key + " + ")
+                    if bin_var1 == None: bin_var1 = r.key + "_" + R.key;
             f.seek(-3, 2)
             f.write(" = 1\n")
     except Exception, e:
@@ -88,7 +91,34 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
         raise
-
+        
+    assert(bin_var1 != None)
+ 
+    try:
+        # machine ID constraint     
+        for r in reservation:
+            if r.id_constraint != None:
+		         f.write("\tidconstr_" + r.key + ": ")
+		         added_constr = False
+		         for R in resources:
+		             if r.type == R.type:
+		                 if r.id_constraint in R.key:
+		                    f.write(r.key + "_" + R.key + " + ")
+		                    added_constr = True
+		         if added_constr:
+  		            f.seek(-3, 2)
+  		            f.write(" = 1\n")
+		         else:
+		            f.write(bin_var1 + " = 2\n")
+		         
+    except Exception, e:
+        print "Exception in LP generation (machine ID constraint): %s" % e
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
+        raise
+        
+            
+    
     try:
         # Capacity constrains
         for R in resources:
@@ -179,6 +209,7 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
                         links = links | {compound_resources[j][jp].key}
 
             if links:  # Adding compound resources constrains # TODO Needs to be check, currently these constrains are not passed
+                print(links, ":", constraints)
                 for c in constraints:
                     out = ""
                     written = False
@@ -470,6 +501,8 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
                 newr = Resource(idx)
                 newr.id = idx
                 newr.key = "r" + `idx`
+                if "ID" in r:
+                   newr.id_constraint = r["ID"].replace("-", "")
                 if "Group" not in r:
                     r["Group"] = "GRP" + str(group_counter)
                     group_counter = group_counter + 1
@@ -485,7 +518,7 @@ def schedule(managers, resources,  alloc_req, constrains, res_constrains):
                     newr.attributes[a] = r["Attributes"][a]
                 reservation_aux.append(newr)
                 idx = idx + 1
-
+        
         # Translate compound allocation request to generate the optimization
         # problem
         compound_reservation = [
