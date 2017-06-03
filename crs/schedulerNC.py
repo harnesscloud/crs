@@ -102,7 +102,7 @@ def generate_lp(filename, resources, compound_resources, constraints, reservatio
 		         added_constr = False
 		         for R in resources:
 		             if r.type == R.type:
-		                 if r.id_constraint in R.key:
+		                 if r.id_constraint == R.key:
 		                    f.write(r.key + "_" + R.key + " + ")
 		                    added_constr = True
 		         if added_constr:
